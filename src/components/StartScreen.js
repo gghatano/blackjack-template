@@ -85,6 +85,56 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
                 onChange={(e) => setDataUrl(e.target.value)}
                 helperText="デフォルト: Google Spreadsheet URL"
               />
+              <Box mt={2} p={2} bgcolor="#f5f5f5" borderRadius={1}>
+                <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+                  スプレッドシートの仕様:
+                </Typography>
+                <Typography variant="body2" paragraph>
+                  以下の形式でスプレッドシートを準備してください：
+                </Typography>
+                
+                {/* 表形式のサンプル */}
+                <Box mx={2} mb={2} p={1} border="1px solid #ddd" borderRadius={1} bgcolor="white" overflow="auto">
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #ddd' }}>
+                        <th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f9f9f9' }}>A列: 単語名</th>
+                        <th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f9f9f9' }}>B列: 数値</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid #ddd' }}>
+                        <td style={{ padding: '8px' }}>東京ドーム</td>
+                        <td style={{ padding: '8px' }}>55000</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #ddd' }}>
+                        <td style={{ padding: '8px' }}>横浜スタジアム</td>
+                        <td style={{ padding: '8px' }}>34046</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #ddd' }}>
+                        <td style={{ padding: '8px' }}>国立竹馬競技場</td>
+                        <td style={{ padding: '8px' }}>72000</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '8px' }}>京セラドーム</td>
+                        <td style={{ padding: '8px' }}>14500</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </Box>
+                
+                <ul style={{ marginLeft: '20px', fontSize: '0.875rem' }}>
+                  <li>A列: 単語名（例：場所名、都市名、商品名など）</li>
+                  <li>B列: 数値（例：人口、収容人数、価格など）</li>
+                  <li>1行目はヘッダー行として扱われます</li>
+                  <li>2行目以降のデータが読み込まれます</li>
+                  <li>シートは公開設定にしてください</li>
+                </ul>
+                <Typography variant="body2">
+                  公開方法: Googleスプレッドシートで [ファイル] → [共有] → [リンクを取得] → 
+                  「リンクを知っている全員」に設定
+                </Typography>
+              </Box>
             </Grid>
             
             <Grid item xs={12}>
