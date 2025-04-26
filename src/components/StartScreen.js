@@ -41,8 +41,8 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
+    <Box sx={{ width: '100%', maxWidth: '100%', mx: 'auto', mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 4, maxWidth: '800px', mx: 'auto' }}>
         <Typography variant="h4" component="h1" gutterBottom align="center">
           単語スコアゲーム
         </Typography>

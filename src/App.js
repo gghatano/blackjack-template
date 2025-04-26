@@ -22,7 +22,7 @@ function App() {
   };
 
   return (
-    <div className="game-container">
+    <div className="game-container" style={{ width: '100%', maxWidth: '100%' }}>
       {!gameStarted ? (
         <StartScreen onStartGame={handleStartGame} defaultUrl={dataUrl} />
       ) : (

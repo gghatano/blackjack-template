@@ -130,7 +130,7 @@ const GameScreen = ({
   }
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', maxWidth: '100%' }}>
       <Button 
         variant="outlined" 
         onClick={onResetGame}
