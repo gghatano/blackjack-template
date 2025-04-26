@@ -30,16 +30,14 @@ const TeamPanel = ({ team, isActive, targetScore, selectedWord, onConfirm }) => 
           {selectedWord ? (
             <>
               <Typography variant="body2" gutterBottom>
-                選択中: <strong>{selectedWord.name}</strong> 
-                (値: {selectedWord.value})
+                選択中: <strong>{selectedWord.name}</strong>
               </Typography>
               <Typography variant="body2" gutterBottom>
-                新しいスコア: <strong>{team.score + selectedWord.value}</strong> 
-                ({team.score + selectedWord.value > targetScore ? '失格' : 'OK'})
+                選択した単語の得点は確定後に表示されます
               </Typography>
               <Button 
                 variant="contained" 
-                color={team.score + selectedWord.value > targetScore ? 'error' : 'primary'}
+                color="primary"
                 onClick={onConfirm}
                 fullWidth
                 sx={{ mt: 1 }}
