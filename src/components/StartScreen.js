@@ -42,8 +42,8 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%', mx: 'auto', mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, maxWidth: '800px', mx: 'auto' }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
+      <Paper elevation={3} sx={{ p: 4, maxWidth: '800px', mx: 'auto', background: 'linear-gradient(to bottom right, #ffffff, #e3f2fd)' }}>
+        <Typography variant="h4" component="h1" gutterBottom align="center" color="primary.dark" sx={{ fontWeight: 'bold' }}>
           単語スコアゲーム
         </Typography>
         
@@ -85,8 +85,8 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
                 onChange={(e) => setDataUrl(e.target.value)}
                 helperText="デフォルト: Google Spreadsheet URL"
               />
-              <Box mt={2} p={2} bgcolor="#f5f5f5" borderRadius={1}>
-                <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+              <Box mt={2} p={2} bgcolor="background.lightPurple" borderRadius={2}>
+                <Typography variant="subtitle2" gutterBottom fontWeight="bold" color="secondary.dark">
                   スプレッドシートの仕様:
                 </Typography>
                 <Typography variant="body2" paragraph>
@@ -94,7 +94,7 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
                 </Typography>
                 
                 {/* 表形式のサンプル */}
-                <Box mx={2} mb={2} p={1} border="1px solid #ddd" borderRadius={1} bgcolor="white" overflow="auto">
+                <Box mx={2} mb={2} p={1} border="1px solid #ddd" borderRadius={2} bgcolor="white" overflow="auto" boxShadow="0 2px 4px rgba(0,0,0,0.05)">
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid #ddd' }}>
@@ -141,9 +141,14 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
               <Button 
                 type="submit" 
                 variant="contained" 
-                color="primary" 
+                color="secondary" 
                 fullWidth
                 size="large"
+                sx={{
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  boxShadow: '0 4px 6px rgba(245, 0, 87, 0.25)'
+                }}
               >
                 ゲームを開始する
               </Button>

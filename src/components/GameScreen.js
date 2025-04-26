@@ -132,18 +132,20 @@ const GameScreen = ({
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
       <Button 
-        variant="outlined" 
+        variant="outlined"
+        color="secondary" 
         onClick={onResetGame}
-        sx={{ mb: 2 }}
+        sx={{ mb: 2, borderRadius: 2 }}
+        startIcon={<span>⬅️</span>}
       >
         トップに戻る
       </Button>
       
       <div className="grid-container">
         <div className="game-area">
-          <Paper className="target-score" elevation={2}>
+          <Paper className="target-score" elevation={3} sx={{ bgcolor: 'background.lightGreen', borderRadius: 2, border: '1px solid #81c784' }}>
             <Box display="flex" alignItems="center">
-              <Typography variant="h5" component="span" sx={{ mr: 2 }}>
+              <Typography variant="h5" component="span" sx={{ mr: 2, color: 'success.dark', fontWeight: 'bold' }}>
                 目標スコア:
               </Typography>
               <TextField
@@ -178,13 +180,13 @@ const GameScreen = ({
           </Grid>
           
           <Box mt={4}>
-            <Typography variant="h6" gutterBottom>
-              ゲーム履歴
+            <Typography variant="h6" gutterBottom sx={{ color: 'info.dark', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+              <span style={{ marginRight: '8px' }}>📋</span> ゲーム履歴
             </Typography>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
               <Table size="small" className="history-table">
                 <TableHead>
-                  <TableRow>
+                  <TableRow sx={{ bgcolor: 'background.lightPurple' }}>
                     <TableCell>チーム</TableCell>
                     <TableCell>選択した単語</TableCell>
                     <TableCell align="right">単語の値</TableCell>
@@ -199,9 +201,10 @@ const GameScreen = ({
                       <TableCell>{record.word}</TableCell>
                       <TableCell align="right">{record.wordValue}</TableCell>
                       <TableCell align="right">{record.newScore}</TableCell>
-                      <TableCell>
-                        {record.isOut ? '失格' : ''}
-                      </TableCell>
+                      <TableCell align="right">{record.isOut ? 
+                        <span style={{ color: 'error.main', fontWeight: 'bold' }}>失格</span> : 
+                        <span style={{ color: 'success.main' }}>OK</span>
+                      }</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -211,8 +214,8 @@ const GameScreen = ({
         </div>
         
         <div className="word-list-area">
-          <Typography variant="h6" gutterBottom>
-            単語リスト
+          <Typography variant="h6" gutterBottom sx={{ color: 'warning.dark', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: '8px' }}>📖</span> 単語リスト
           </Typography>
           <WordList 
             words={wordData} 
