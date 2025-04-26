@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, TextField, Typography, Box, Paper, Grid } from '@mui/material';
+import { Button, TextField, Typography, Box, Paper, Grid, Slider, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const StartScreen = ({ onStartGame, defaultUrl }) => {
   const [teamCount, setTeamCount] = useState(2);
@@ -50,14 +50,20 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="参加チーム数 (1-4)"
-                type="number"
-                inputProps={{ min: 1, max: 4 }}
-                value={teamCount}
-                onChange={handleTeamCountChange}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="team-count-label">参加チーム数</InputLabel>
+                <Select
+                  labelId="team-count-label"
+                  value={teamCount}
+                  label="参加チーム数"
+                  onChange={(e) => handleTeamCountChange(e)}
+                >
+                  <MenuItem value={1}>1チーム</MenuItem>
+                  <MenuItem value={2}>2チーム</MenuItem>
+                  <MenuItem value={3}>3チーム</MenuItem>
+                  <MenuItem value={4}>4チーム</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
             
             {teams.map((team, index) => (
