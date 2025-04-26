@@ -153,17 +153,6 @@ const GameScreen = ({
       }
     ]);
     
-    // 失格時のアニメーション効果
-    if (isOut) {
-      const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
-      if (teamPanel) {
-        teamPanel.classList.add('team-out-animation');
-        setTimeout(() => {
-          teamPanel.classList.remove('team-out-animation');
-        }, 1000);
-      }
-    }
-    
     // Mark word as used
     setUsedWords([...usedWords, selectedWord.name]);
     
@@ -184,6 +173,23 @@ const GameScreen = ({
         return nextScore;
       });
     }, 50);
+    
+    // アニメーション完了後に失格アニメーションを表示
+    setTimeout(() => {
+      // 失格時のアニメーション効果
+      if (isOut) {
+        const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
+        if (teamPanel) {
+          teamPanel.classList.add('team-out-animation');
+          setTimeout(() => {
+            teamPanel.classList.remove('team-out-animation');
+          }, 1000);
+        }
+      }
+      
+      // 大体のアニメーション終了
+      setShowScoreAnimation(false);
+    }, 1000);
     
     // アニメーション完了後にチームを切り替える
     setTimeout(() => {
@@ -250,25 +256,8 @@ const GameScreen = ({
       <div className="grid-container">
         <div className="game-area">
           <Paper className="target-score" elevation={3} sx={{ bgcolor: 'background.lightGreen', borderRadius: 2, border: '1px solid #81c784' }}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <span>ラウンド: <Chip label={roundNumber} color="primary" size="small" sx={{ ml: 1, fontWeight: 'bold' }} /></span>
-                <span>ターン: {gameTeams[currentTeamIndex].name}</span>
-              </Typography>
-              <LinearProgress 
-                variant="determinate" 
-                value={(roundNumber - 1) * 10} 
-                sx={{ 
-                  height: 8, 
-                  borderRadius: 4,
-                  '& .MuiLinearProgress-bar': {
-                    backgroundColor: '#2196f3'
-                  }
-                }} 
-              />
-            </Box>
-            <Box display="flex" alignItems="center">
-              <Typography variant="h5" component="span" sx={{ mr: 2, color: 'success.dark', fontWeight: 'bold' }}>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Typography variant="h5" component="span" sx={{ color: 'success.dark', fontWeight: 'bold' }}>
                 目標スコア:
               </Typography>
               <TextField
@@ -279,6 +268,15 @@ const GameScreen = ({
                 size="small"
                 sx={{ width: 150 }}
               />
+            </Box>
+            
+            <Box mt={2} display="flex" alignItems="center" justifyContent="space-between">
+              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Chip label={`ラウンド: ${roundNumber}`} color="primary" size="small" sx={{ fontWeight: 'bold' }} />
+              </Typography>
+              <Typography variant="body2">
+                <span>ターン: <strong>{gameTeams[currentTeamIndex].name}</strong></span>
+              </Typography>
             </Box>
           </Paper>
           
