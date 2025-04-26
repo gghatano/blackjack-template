@@ -80,7 +80,9 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
           現在のスコア: <strong className={scoreClass} style={{ color: '#2196f3', transition: 'all 0.3s ease' }}>{scoreDisplay}</strong>
         </Typography>
         <Typography>
-          残り: <strong style={{ color: team.isOut ? '#f44336' : '#4caf50', transition: 'all 0.3s ease' }}>{team.isOut ? '失格' : (targetScore - scoreDisplay)}</strong>
+          残り: <strong style={{ color: showOutMessage ? '#f44336' : '#4caf50', transition: 'all 0.3s ease' }}>
+            {showOutMessage ? '失格' : (targetScore - scoreDisplay)}
+          </strong>
         </Typography>
       </Box>
       
