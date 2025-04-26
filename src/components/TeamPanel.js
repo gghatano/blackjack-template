@@ -5,6 +5,7 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
   // スコアの表示値とスタイル管理
   const [scoreClass, setScoreClass] = useState('');
   const [scoreDisplay, setScoreDisplay] = useState(team.score);
+  const [showOutMessage, setShowOutMessage] = useState(team.isOut);
   const remainingToTarget = targetScore - team.score;
   
   // スコアアニメーション効果の管理
@@ -12,6 +13,10 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
     if (showAnimation) {
       setScoreDisplay(animatedScore);
       setScoreClass('score-change-animation');
+      // アニメーション中は失格表示を非表示
+      if (team.isOut && animatedScore < targetScore) {
+        setShowOutMessage(false);
+      }
     } else {
       setScoreDisplay(team.score);
       // アニメーション終了後、クラスをリセット
@@ -20,8 +25,10 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
           setScoreClass('');
         }, 200);
       }
+      // アニメーション終了後、失格表示をチームのステータスに合わせる
+      setShowOutMessage(team.isOut);
     }
-  }, [showAnimation, animatedScore, team.score]);
+  }, [showAnimation, animatedScore, team.score, team.isOut, targetScore]);
   
   return (
     <Paper 
@@ -115,14 +122,15 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
         </Box>
       )}
       
-      {team.isOut && (
+      {showOutMessage && (
         <Typography variant="body2" color="error" mt={2} sx={{ 
           p: 1, 
           bgcolor: '#ffebee', 
           borderRadius: 1,
           display: 'flex',
           alignItems: 'center',
-          fontWeight: 'medium'
+          fontWeight: 'medium',
+          animation: 'fadeIn 0.5s ease-in-out'
         }}>
           <span style={{ marginRight: '8px' }}>⚠️</span> 目標スコアを超えました！
         </Typography>

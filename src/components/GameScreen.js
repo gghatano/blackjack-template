@@ -12,8 +12,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  LinearProgress,
-  Tooltip,
   Chip
 } from '@mui/material';
 import { fetchSheetData } from '../utils/sheetUtils';
@@ -40,6 +38,7 @@ const GameScreen = ({
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
   const [lastScore, setLastScore] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [scoreAnimationComplete, setScoreAnimationComplete] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -127,6 +126,7 @@ const GameScreen = ({
     // アニメーション用に前回のスコアを保存
     setLastScore(currentTeam.score);
     setAnimatedScore(currentTeam.score);
+    setScoreAnimationComplete(false); // アニメーション開始時にリセット
     
     // Update team score
     const updatedTeams = [...gameTeams];
@@ -159,66 +159,63 @@ const GameScreen = ({
     // Clear selection
     setSelectedWord(null);
     
-    // スコアの変化を表示してからチームを切り替える
-    const animationDuration = 1200; // スコアアニメーションの時間
-    
     // アニメーションのためのインターバル
     const scoreInterval = setInterval(() => {
       setAnimatedScore(prevScore => {
         const nextScore = prevScore + Math.ceil((newScore - prevScore) / 10);
         if (nextScore >= newScore) {
           clearInterval(scoreInterval);
+          // アニメーション完了を通知
+          setScoreAnimationComplete(true);
           return newScore;
         }
         return nextScore;
       });
     }, 50);
     
-    // アニメーション完了後に失格アニメーションを表示
-    setTimeout(() => {
-      // 失格時のアニメーション効果
-      if (isOut) {
-        const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
-        if (teamPanel) {
-          teamPanel.classList.add('team-out-animation');
-          setTimeout(() => {
-            teamPanel.classList.remove('team-out-animation');
-          }, 1000);
-        }
-      }
-      
-      // 大体のアニメーション終了
-      setShowScoreAnimation(false);
-    }, 1000);
-    
-    // アニメーション完了後にチームを切り替える
-    setTimeout(() => {
-      // アニメーション終了
-      setShowScoreAnimation(false);
-      
-      // 次のチームを決定
-      let nextTeamIndex = (currentTeamIndex + 1) % gameTeams.length;
-      while (
-        updatedTeams[nextTeamIndex].isOut && 
-        // Only move if there's at least one team still in the game
-        updatedTeams.some(team => !team.isOut)
-      ) {
-        nextTeamIndex = (nextTeamIndex + 1) % gameTeams.length;
+    // アニメーション完了をチェックするインターバル
+    const checkInterval = setInterval(() => {
+      if (scoreAnimationComplete) {
+        clearInterval(checkInterval);
         
-        // If we've gone full circle, stay on current team
-        if (nextTeamIndex === currentTeamIndex) {
-          break;
+        // 失格時のアニメーション効果（スコアアニメーション完了後）
+        if (isOut) {
+          const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
+          if (teamPanel) {
+            teamPanel.classList.add('team-out-animation');
+            setTimeout(() => {
+              teamPanel.classList.remove('team-out-animation');
+            }, 1000);
+          }
         }
+        
+        // アニメーション終了処理
+        setTimeout(() => {
+          setShowScoreAnimation(false);
+          
+          // 次のチームへの移行を遅延
+          setTimeout(() => {
+            // 次のチームを決定
+            let nextTeamIndex = (currentTeamIndex + 1) % gameTeams.length;
+            while (
+              updatedTeams[nextTeamIndex].isOut && 
+              updatedTeams.some(team => !team.isOut)
+            ) {
+              nextTeamIndex = (nextTeamIndex + 1) % gameTeams.length;
+              if (nextTeamIndex === currentTeamIndex) break;
+            }
+            
+            // ラウンド数の更新
+            if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
+              setRoundNumber(prevRound => prevRound + 1);
+            }
+            
+            // チームの切り替え
+            setCurrentTeamIndex(nextTeamIndex);
+          }, 500);
+        }, 1000);
       }
-      
-      // ラウンド数の更新
-      if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
-        setRoundNumber(prevRound => prevRound + 1);
-      }
-      
-      // チームの切り替え
-      setCurrentTeamIndex(nextTeamIndex);
-    }, animationDuration);
+    }, 100);
   };
 
   const handleTargetScoreChange = (e) => {
