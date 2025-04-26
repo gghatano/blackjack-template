@@ -1,7 +1,7 @@
 import React from 'react';
-import { Paper, Typography, Box } from '@mui/material';
+import { Paper, Typography, Box, Button } from '@mui/material';
 
-const WordList = ({ words, usedWords, selectedWord, onSelectWord }) => {
+const WordList = ({ words, usedWords, selectedWord, onSelectWord, onSkip }) => {
   return (
     <Box sx={{ 
       maxHeight: 'calc(100vh - 120px)', 
@@ -11,6 +11,29 @@ const WordList = ({ words, usedWords, selectedWord, onSelectWord }) => {
       borderRadius: 2,
       border: '1px solid #ffb74d'
     }}>
+      <Button
+        variant="outlined"
+        color="warning"
+        fullWidth
+        onClick={onSkip}
+        sx={{
+          mb: 2,
+          fontWeight: 'bold',
+          borderRadius: 2,
+          border: '2px solid #ff9800',
+          '&:hover': {
+            backgroundColor: '#fff3e0',
+            borderColor: '#f57c00',
+          },
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          py: 1
+        }}
+      >
+        <span style={{ marginRight: '8px' }}>⏭️</span>
+        スキップ
+      </Button>
       {words.map((word, index) => {
         const isUsed = usedWords.includes(word.name);
         const isSelected = selectedWord && selectedWord.name === word.name;
@@ -18,6 +41,7 @@ const WordList = ({ words, usedWords, selectedWord, onSelectWord }) => {
         return (
           <Paper
             key={index}
+            id={`word-${word.name}`}
             className={`word-item ${isUsed ? 'disabled' : ''} ${isSelected ? 'selected' : ''}`}
             elevation={isSelected ? 3 : 1}
             onClick={() => !isUsed && onSelectWord(word)}

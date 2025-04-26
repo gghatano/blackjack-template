@@ -11,7 +11,10 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  LinearProgress,
+  Tooltip,
+  Chip
 } from '@mui/material';
 import { fetchSheetData } from '../utils/sheetUtils';
 import WordList from './WordList';
@@ -33,6 +36,10 @@ const GameScreen = ({
   const [selectedWord, setSelectedWord] = useState(null);
   const [usedWords, setUsedWords] = useState([]);
   const [gameTeams, setGameTeams] = useState(teams.map(team => ({ ...team, isOut: false })));
+  const [roundNumber, setRoundNumber] = useState(1);
+  const [showScoreAnimation, setShowScoreAnimation] = useState(false);
+  const [lastScore, setLastScore] = useState(0);
+  const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
@@ -55,7 +62,53 @@ const GameScreen = ({
   const handleSelectWord = (word) => {
     if (!usedWords.includes(word.name)) {
       setSelectedWord(word);
+      
+      // アニメーション効果：選択時のフィードバック
+      const wordElement = document.getElementById(`word-${word.name}`);
+      if (wordElement) {
+        wordElement.classList.add('word-selected-animation');
+        setTimeout(() => {
+          wordElement.classList.remove('word-selected-animation');
+        }, 500);
+      }
     }
+  };
+
+  const handleSkip = () => {
+    if (gameTeams[currentTeamIndex].isOut) return;
+    
+    // 次のチームに移る
+    let nextTeamIndex = (currentTeamIndex + 1) % gameTeams.length;
+    while (
+      gameTeams[nextTeamIndex].isOut && 
+      gameTeams.some(team => !team.isOut)
+    ) {
+      nextTeamIndex = (nextTeamIndex + 1) % gameTeams.length;
+      if (nextTeamIndex === currentTeamIndex) break;
+    }
+    
+    // ヒストリーに記録
+    setGameHistory([
+      ...gameHistory,
+      {
+        team: gameTeams[currentTeamIndex].name,
+        word: 'スキップ',
+        wordValue: 0,
+        newScore: gameTeams[currentTeamIndex].score,
+        isOut: false,
+        isSkip: true
+      }
+    ]);
+    
+    // 選択をクリア
+    setSelectedWord(null);
+    
+    // ラウンド数の更新
+    if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
+      setRoundNumber(roundNumber + 1);
+    }
+    
+    setCurrentTeamIndex(nextTeamIndex);
   };
 
   const handleConfirmSelection = () => {
@@ -64,6 +117,10 @@ const GameScreen = ({
     const currentTeam = gameTeams[currentTeamIndex];
     const newScore = currentTeam.score + selectedWord.value;
     const isOut = newScore > targetScore;
+    
+    // アニメーション用に前回のスコアを保存
+    setLastScore(currentTeam.score);
+    setAnimatedScore(currentTeam.score);
     
     // Update team score
     const updatedTeams = [...gameTeams];
@@ -74,6 +131,24 @@ const GameScreen = ({
     };
     setGameTeams(updatedTeams);
     
+    // スコアアニメーションの開始
+    setShowScoreAnimation(true);
+    
+    // アニメーションのためのインターバル
+    const scoreInterval = setInterval(() => {
+      setAnimatedScore(prevScore => {
+        const nextScore = prevScore + Math.ceil((newScore - prevScore) / 10);
+        if (nextScore >= newScore) {
+          clearInterval(scoreInterval);
+          setTimeout(() => {
+            setShowScoreAnimation(false);
+          }, 500);
+          return newScore;
+        }
+        return nextScore;
+      });
+    }, 50);
+    
     // Add to history
     setGameHistory([
       ...gameHistory,
@@ -82,9 +157,21 @@ const GameScreen = ({
         word: selectedWord.name,
         wordValue: selectedWord.value,
         newScore: newScore,
-        isOut
+        isOut,
+        round: roundNumber
       }
     ]);
+    
+    // 失格時のアニメーション効果
+    if (isOut) {
+      const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
+      if (teamPanel) {
+        teamPanel.classList.add('team-out-animation');
+        setTimeout(() => {
+          teamPanel.classList.remove('team-out-animation');
+        }, 1000);
+      }
+    }
     
     // Mark word as used
     setUsedWords([...usedWords, selectedWord.name]);
@@ -106,6 +193,12 @@ const GameScreen = ({
         break;
       }
     }
+    
+    // ラウンド数の更新
+    if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
+      setRoundNumber(roundNumber + 1);
+    }
+    
     setCurrentTeamIndex(nextTeamIndex);
   };
 
@@ -144,6 +237,23 @@ const GameScreen = ({
       <div className="grid-container">
         <div className="game-area">
           <Paper className="target-score" elevation={3} sx={{ bgcolor: 'background.lightGreen', borderRadius: 2, border: '1px solid #81c784' }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <span>ラウンド: <Chip label={roundNumber} color="primary" size="small" sx={{ ml: 1, fontWeight: 'bold' }} /></span>
+                <span>ターン: {gameTeams[currentTeamIndex].name}</span>
+              </Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={(roundNumber - 1) * 10} 
+                sx={{ 
+                  height: 8, 
+                  borderRadius: 4,
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: '#2196f3'
+                  }
+                }} 
+              />
+            </Box>
             <Box display="flex" alignItems="center">
               <Typography variant="h5" component="span" sx={{ mr: 2, color: 'success.dark', fontWeight: 'bold' }}>
                 目標スコア:
@@ -169,11 +279,14 @@ const GameScreen = ({
                 key={index}
               >
                 <TeamPanel
+                  id={`team-panel-${index}`}
                   team={team}
                   isActive={index === currentTeamIndex}
                   targetScore={targetScore}
                   selectedWord={index === currentTeamIndex ? selectedWord : null}
                   onConfirm={index === currentTeamIndex ? handleConfirmSelection : null}
+                  showAnimation={showScoreAnimation && index === currentTeamIndex}
+                  animatedScore={animatedScore}
                 />
               </Grid>
             ))}
@@ -198,7 +311,12 @@ const GameScreen = ({
                   {gameHistory.map((record, index) => (
                     <TableRow key={index}>
                       <TableCell>{record.team}</TableCell>
-                      <TableCell>{record.word}</TableCell>
+                      <TableCell>
+                        {record.isSkip ? 
+                          <span style={{ color: '#ff9800', fontStyle: 'italic' }}>スキップ</span> : 
+                          record.word
+                        }
+                      </TableCell>
                       <TableCell align="right">{record.wordValue}</TableCell>
                       <TableCell align="right">{record.newScore}</TableCell>
                       <TableCell align="right">{record.isOut ? 
@@ -222,6 +340,7 @@ const GameScreen = ({
             usedWords={usedWords}
             selectedWord={selectedWord}
             onSelectWord={handleSelectWord}
+            onSkip={handleSkip}
           />
         </div>
       </div>

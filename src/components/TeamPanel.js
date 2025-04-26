@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Button, Box } from '@mui/material';
 
-const TeamPanel = ({ team, isActive, targetScore, selectedWord, onConfirm }) => {
+const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, showAnimation, animatedScore }) => {
+  const [scoreDisplay, setScoreDisplay] = useState(team.score);
   const remainingToTarget = targetScore - team.score;
+  
+  // スコアアニメーション効果の管理
+  useEffect(() => {
+    if (showAnimation) {
+      setScoreDisplay(animatedScore);
+    } else {
+      setScoreDisplay(team.score);
+    }
+  }, [showAnimation, animatedScore, team.score]);
   
   return (
     <Paper 
+      id={id}
       elevation={isActive ? 3 : 1} 
+      className={team.isOut ? 'team-panel-out' : ''}
       sx={{
         p: 2,
         border: isActive ? '2px solid #2196f3' : '1px solid #ddd',
@@ -49,10 +61,10 @@ const TeamPanel = ({ team, isActive, targetScore, selectedWord, onConfirm }) => 
       
       <Box display="flex" justifyContent="space-between" alignItems="center" mt={1} bgcolor={team.isOut ? 'inherit' : 'background.default'} p={1} borderRadius={1}>
         <Typography>
-          現在のスコア: <strong style={{ color: '#2196f3' }}>{team.score}</strong>
+          現在のスコア: <strong style={{ color: '#2196f3' }}>{scoreDisplay}</strong>
         </Typography>
         <Typography>
-          残り: <strong style={{ color: team.isOut ? '#f44336' : '#4caf50' }}>{team.isOut ? '失格' : remainingToTarget}</strong>
+          残り: <strong style={{ color: team.isOut ? '#f44336' : '#4caf50' }}>{team.isOut ? '失格' : (targetScore - scoreDisplay)}</strong>
         </Typography>
       </Box>
       
