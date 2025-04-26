@@ -49,7 +49,8 @@ const TeamPanel = ({ team, isActive, targetScore, selectedWord, onConfirm }) => 
             </>
           ) : (
             <Typography variant="body2" color="textSecondary">
-              右側のリストから単語を選択してください
+              <span className="desktop-only">右側のリストから単語を選択してください</span>
+              <span className="mobile-only">下のリストから単語を選択してください</span>
             </Typography>
           )}
         </Box>
