@@ -159,7 +159,13 @@ const GameScreen = ({
           
           <Grid container spacing={2}>
             {gameTeams.map((team, index) => (
-              <Grid item xs={12} sm={6} key={index}>
+              <Grid item 
+                xs={12} 
+                sm={gameTeams.length <= 2 ? 6 : 12} 
+                md={gameTeams.length <= 2 ? 6 : gameTeams.length === 3 ? 4 : 6} 
+                lg={gameTeams.length === 4 ? 3 : gameTeams.length === 3 ? 4 : 6}
+                key={index}
+              >
                 <TeamPanel
                   team={team}
                   isActive={index === currentTeamIndex}
