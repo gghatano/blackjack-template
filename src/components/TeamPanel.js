@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Button, Box } from '@mui/material';
 
 const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, showAnimation, animatedScore }) => {
+  // スコアの表示値とスタイル管理
+  const [scoreClass, setScoreClass] = useState('');
   const [scoreDisplay, setScoreDisplay] = useState(team.score);
   const remainingToTarget = targetScore - team.score;
   
@@ -9,8 +11,15 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
   useEffect(() => {
     if (showAnimation) {
       setScoreDisplay(animatedScore);
+      setScoreClass('score-change-animation');
     } else {
       setScoreDisplay(team.score);
+      // アニメーション終了後、クラスをリセット
+      if (scoreClass) {
+        setTimeout(() => {
+          setScoreClass('');
+        }, 200);
+      }
     }
   }, [showAnimation, animatedScore, team.score]);
   
@@ -61,10 +70,10 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
       
       <Box display="flex" justifyContent="space-between" alignItems="center" mt={1} bgcolor={team.isOut ? 'inherit' : 'background.default'} p={1} borderRadius={1}>
         <Typography>
-          現在のスコア: <strong style={{ color: '#2196f3' }}>{scoreDisplay}</strong>
+          現在のスコア: <strong className={scoreClass} style={{ color: '#2196f3', transition: 'all 0.3s ease' }}>{scoreDisplay}</strong>
         </Typography>
         <Typography>
-          残り: <strong style={{ color: team.isOut ? '#f44336' : '#4caf50' }}>{team.isOut ? '失格' : (targetScore - scoreDisplay)}</strong>
+          残り: <strong style={{ color: team.isOut ? '#f44336' : '#4caf50', transition: 'all 0.3s ease' }}>{team.isOut ? '失格' : (targetScore - scoreDisplay)}</strong>
         </Typography>
       </Box>
       
@@ -73,10 +82,10 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
           {selectedWord ? (
             <>
               <Typography variant="body2" gutterBottom>
-                選択中: <strong>{selectedWord.name}</strong>
+                選択中: <strong style={{ color: 'primary.main' }}>{selectedWord.name}</strong>
               </Typography>
-              <Typography variant="body2" gutterBottom>
-                選択した単語の得点は確定後に表示されます
+              <Typography variant="body2" gutterBottom sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                この単語の得点は確定後に表示されます
               </Typography>
               <Button 
                 variant="contained"
