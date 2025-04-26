@@ -1,0 +1,105 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.game-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.grid-container {
+  display: flex;
+  height: calc(100vh - 40px);
+}
+
+.game-area {
+  flex: 8;
+  padding: 10px;
+  border-right: 1px solid #ccc;
+}
+
+.word-list-area {
+  flex: 2;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.word-item {
+  margin: 5px 0;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.word-item:hover {
+  background-color: #f0f0f0;
+}
+
+.word-item.selected {
+  background-color: #e0f7fa;
+}
+
+.word-item.disabled {
+  color: #aaa;
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.team-panel {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.team-panel.active {
+  border-color: #2196f3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+.team-panel.lost {
+  background-color: #f0f0f0;
+  opacity: 0.7;
+}
+
+.target-score {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.history-table th, .history-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.history-table th {
+  background-color: #f2f2f2;
+}
+
+.history-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}

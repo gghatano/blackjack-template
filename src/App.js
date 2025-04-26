@@ -1,0 +1,43 @@
+import React, { useState } from 'react';
+import StartScreen from './components/StartScreen';
+import GameScreen from './components/GameScreen';
+
+function App() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [teams, setTeams] = useState([]);
+  const [dataUrl, setDataUrl] = useState('https://docs.google.com/spreadsheets/d/1Y-gSB3luEaQ8YVCWtBIxZ-xdAurTzlpDuwQ3Y7pRjww/edit?gid=0#gid=0');
+  const [wordData, setWordData] = useState([]);
+  const [targetScore, setTargetScore] = useState(90000);
+
+  const handleStartGame = (teamData, url) => {
+    setTeams(teamData);
+    setDataUrl(url || dataUrl);
+    setGameStarted(true);
+  };
+
+  const handleResetGame = () => {
+    setGameStarted(false);
+    setTeams([]);
+    setWordData([]);
+  };
+
+  return (
+    <div className="game-container">
+      {!gameStarted ? (
+        <StartScreen onStartGame={handleStartGame} defaultUrl={dataUrl} />
+      ) : (
+        <GameScreen 
+          teams={teams} 
+          dataUrl={dataUrl} 
+          wordData={wordData}
+          setWordData={setWordData}
+          targetScore={targetScore}
+          setTargetScore={setTargetScore}
+          onResetGame={handleResetGame}
+        />
+      )}
+    </div>
+  );
+}
+
+export default App;
