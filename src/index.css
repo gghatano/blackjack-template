@@ -5,11 +5,6 @@
   100% { transform: scale(1); }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes winnerDisplay {
   0% { transform: scale(0.9); opacity: 0; }
   40% { transform: scale(1.1); opacity: 1; }
@@ -22,6 +17,11 @@
   50% { transform: translateY(0) rotate(0); }
   75% { transform: translateY(-5px) rotate(5deg); }
   100% { transform: translateY(0) rotate(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInRight {
@@ -53,6 +53,29 @@
   animation: scorePulse 0.5s ease-in-out;
 }
 
+/* レスポンシブ表示用のクラス */
+.desktop-only {
+  display: inline;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* モバイル向けタブ切替レイアウト */
+.mobile-tabs {
+  display: none;
+}
+
+.mobile-tab-content {
+  display: none;
+}
+
+/* デスクトップ表示用履歴テーブル */
+.desktop-only-history {
+  display: block;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -63,25 +86,6 @@ body {
   min-height: 100vh;
   width: 100%;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4ecfb 100%);
-}
-
-/* レスポンシブ表示用のクラス */
-.desktop-only {
-  display: inline;
-}
-
-.mobile-only {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .desktop-only {
-    display: none;
-  }
-  
-  .mobile-only {
-    display: inline;
-  }
 }
 
 code {
@@ -106,22 +110,75 @@ code {
 }
 
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: inline;
+  }
+  
   .grid-container {
-    flex-direction: column-reverse;
+    flex-direction: column;
     height: auto;
   }
   
   .game-area {
-    flex: 1;
+    flex: none;
     border-right: none;
-    border-top: 1px solid #ccc;
-    padding-top: 20px;
-    margin-top: 20px;
+    padding-bottom: 10px;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
   
   .word-list-area {
+    display: none;
+  }
+  
+  /* デスクトップ用履歴をモバイルでは非表示 */
+  .desktop-only-history {
+    display: none;
+  }
+  
+  /* タブレイアウト */
+  .mobile-tabs {
+    display: flex;
+    width: 100%;
+    border-bottom: 1px solid #ddd;
+    margin: 10px 0;
+    position: sticky;
+    top: 0;
+    background-color: #f5f7fa;
+    z-index: 100;
+    padding: 5px 0;
+  }
+  
+  .mobile-tab {
     flex: 1;
-    max-height: 300px;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-tab.active {
+    border-bottom: 3px solid #2196f3;
+    color: #2196f3;
+  }
+  
+  .mobile-tab-content {
+    display: block;
+    height: auto;
+    max-height: 50vh; /* 画面の高さの50%までスクロール可能 */
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+  }
+  
+  .mobile-tab-content.hidden {
+    display: none;
   }
 }
 
