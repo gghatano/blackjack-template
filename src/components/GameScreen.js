@@ -432,8 +432,8 @@ const GameScreen = ({
             ))}
           </Grid>
           
-          {/* デスクトップ表示用ゲーム履歴 */}
-          <Box mt={4} className="desktop-history-container">
+          {/* デスクトップ表示用ゲーム履歴（モバイルでは非表示） */}
+          <Box mt={4} className="desktop-only-history">
             <Typography variant="h6" gutterBottom sx={{ color: 'info.dark', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '8px' }}>📋</span> ゲーム履歴
             </Typography>

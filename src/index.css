@@ -71,6 +71,11 @@
   display: none;
 }
 
+/* デスクトップ表示用履歴テーブル */
+.desktop-only-history {
+  display: block;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -131,12 +136,22 @@ code {
     display: none;
   }
   
+  /* デスクトップ用履歴をモバイルでは非表示 */
+  .desktop-only-history {
+    display: none;
+  }
+  
   /* タブレイアウト */
   .mobile-tabs {
     display: flex;
     width: 100%;
     border-bottom: 1px solid #ddd;
     margin: 10px 0;
+    position: sticky;
+    top: 0;
+    background-color: #f5f7fa;
+    z-index: 100;
+    padding: 5px 0;
   }
   
   .mobile-tab {
@@ -155,9 +170,11 @@ code {
   
   .mobile-tab-content {
     display: block;
-    max-height: 300px;
+    height: auto;
+    max-height: 50vh; /* 画面の高さの50%までスクロール可能 */
     overflow-y: auto;
     margin-bottom: 20px;
+    padding-bottom: 10px;
   }
   
   .mobile-tab-content.hidden {
