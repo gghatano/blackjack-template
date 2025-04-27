@@ -41,6 +41,7 @@ const GameScreen = ({
   const [gameWinner, setGameWinner] = useState(null);
   const [showWinnerDisplay, setShowWinnerDisplay] = useState(false);
   const [inputDisabled, setInputDisabled] = useState(false);
+  const [activeTab, setActiveTab] = useState('words'); // モバイル用タブ切替
 
   // データ読み込み
   useEffect(() => {
@@ -60,6 +61,11 @@ const GameScreen = ({
 
     loadData();
   }, [dataUrl, setWordData]);
+
+  // モバイル用タブ切替ハンドラ
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
 
   // 勝者判定関数
   const checkForWinner = (teams) => {
@@ -292,6 +298,42 @@ const GameScreen = ({
     );
   }
 
+  // 履歴テーブルコンポーネント - 再利用のため分離
+  const HistoryTable = () => (
+    <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+      <Table size="small" className="history-table">
+        <TableHead>
+          <TableRow sx={{ bgcolor: 'background.lightPurple' }}>
+            <TableCell>チーム</TableCell>
+            <TableCell>選択した単語</TableCell>
+            <TableCell align="right">単語の値</TableCell>
+            <TableCell align="right">新しいスコア</TableCell>
+            <TableCell>結果</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {gameHistory.map((record, index) => (
+            <TableRow key={index}>
+              <TableCell>{record.team}</TableCell>
+              <TableCell>
+                {record.isSkip ? 
+                  <span style={{ color: '#ff9800', fontStyle: 'italic' }}>スキップ</span> : 
+                  record.word
+                }
+              </TableCell>
+              <TableCell align="right">{record.wordValue}</TableCell>
+              <TableCell align="right">{record.newScore}</TableCell>
+              <TableCell align="right">{record.isOut ? 
+                <span style={{ color: 'error.main', fontWeight: 'bold' }}>失格</span> : 
+                <span style={{ color: 'success.main' }}>OK</span>
+              }</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
   return (
     <Box sx={{ width: '100%', maxWidth: '100%' }}>
       <Button 
@@ -390,45 +432,57 @@ const GameScreen = ({
             ))}
           </Grid>
           
-          <Box mt={4}>
+          {/* デスクトップ表示用ゲーム履歴 */}
+          <Box mt={4} className="desktop-history-container">
             <Typography variant="h6" gutterBottom sx={{ color: 'info.dark', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '8px' }}>📋</span> ゲーム履歴
             </Typography>
-            <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-              <Table size="small" className="history-table">
-                <TableHead>
-                  <TableRow sx={{ bgcolor: 'background.lightPurple' }}>
-                    <TableCell>チーム</TableCell>
-                    <TableCell>選択した単語</TableCell>
-                    <TableCell align="right">単語の値</TableCell>
-                    <TableCell align="right">新しいスコア</TableCell>
-                    <TableCell>結果</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {gameHistory.map((record, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{record.team}</TableCell>
-                      <TableCell>
-                        {record.isSkip ? 
-                          <span style={{ color: '#ff9800', fontStyle: 'italic' }}>スキップ</span> : 
-                          record.word
-                        }
-                      </TableCell>
-                      <TableCell align="right">{record.wordValue}</TableCell>
-                      <TableCell align="right">{record.newScore}</TableCell>
-                      <TableCell align="right">{record.isOut ? 
-                        <span style={{ color: 'error.main', fontWeight: 'bold' }}>失格</span> : 
-                        <span style={{ color: 'success.main' }}>OK</span>
-                      }</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <HistoryTable />
           </Box>
+          
+          {/* モバイル向けタブ切り替え */}
+          <div className="mobile-tabs">
+            <div 
+              className={`mobile-tab ${activeTab === 'words' ? 'active' : ''}`}
+              onClick={() => handleTabChange('words')}
+            >
+              <span>📖 単語リスト</span>
+            </div>
+            <div 
+              className={`mobile-tab ${activeTab === 'history' ? 'active' : ''}`}
+              onClick={() => handleTabChange('history')}
+            >
+              <span>📋 ゲーム履歴</span>
+            </div>
+          </div>
+          
+          {/* モバイル用単語リスト（タブで表示・非表示切り替え） */}
+          <div className={`mobile-tab-content ${activeTab !== 'words' ? 'hidden' : ''}`}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1" sx={{ color: 'warning.dark', fontWeight: 'bold', mb: 1 }}>
+                単語を選んでください
+              </Typography>
+              <WordList 
+                words={wordData} 
+                usedWords={usedWords}
+                selectedWord={selectedWord}
+                onSelectWord={handleSelectWord}
+                onSkip={handleSkip}
+                disabled={inputDisabled || showScoreAnimation || showWinnerDisplay}
+              />
+            </Box>
+          </div>
+          
+          {/* モバイル用ゲーム履歴（タブで表示・非表示切り替え） */}
+          <div className={`mobile-tab-content ${activeTab !== 'history' ? 'hidden' : ''}`}>
+            <Typography variant="subtitle1" sx={{ color: 'info.dark', fontWeight: 'bold', mb: 1 }}>
+              ゲーム履歴
+            </Typography>
+            <HistoryTable />
+          </div>
         </div>
         
+        {/* デスクトップ表示用：右サイドの単語リスト */}
         <div className="word-list-area">
           <Typography variant="h6" gutterBottom sx={{ color: 'warning.dark', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '8px' }}>📖</span> 単語リスト
