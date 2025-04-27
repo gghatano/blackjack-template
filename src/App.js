@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme';
 import StartScreen from './components/StartScreen';
 import GameScreen from './components/GameScreen';
 
@@ -22,21 +25,24 @@ function App() {
   };
 
   return (
-    <div className="game-container" style={{ width: '100%', maxWidth: '100%' }}>
-      {!gameStarted ? (
-        <StartScreen onStartGame={handleStartGame} defaultUrl={dataUrl} />
-      ) : (
-        <GameScreen 
-          teams={teams} 
-          dataUrl={dataUrl} 
-          wordData={wordData}
-          setWordData={setWordData}
-          targetScore={targetScore}
-          setTargetScore={setTargetScore}
-          onResetGame={handleResetGame}
-        />
-      )}
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div className="game-container" style={{ width: '100%', maxWidth: '100%' }}>
+        {!gameStarted ? (
+          <StartScreen onStartGame={handleStartGame} defaultUrl={dataUrl} />
+        ) : (
+          <GameScreen 
+            teams={teams} 
+            dataUrl={dataUrl} 
+            wordData={wordData}
+            setWordData={setWordData}
+            targetScore={targetScore}
+            setTargetScore={setTargetScore}
+            onResetGame={handleResetGame}
+          />
+        )}
+      </div>
+    </ThemeProvider>
   );
 }
 
