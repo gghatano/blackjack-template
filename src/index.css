@@ -10,6 +10,20 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes winnerDisplay {
+  0% { transform: scale(0.9); opacity: 0; }
+  40% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes trophy {
+  0% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-10px) rotate(-5deg); }
+  50% { transform: translateY(0) rotate(0); }
+  75% { transform: translateY(-5px) rotate(5deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+
 @keyframes slideInRight {
   from { transform: translateX(20px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }

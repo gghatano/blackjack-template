@@ -38,8 +38,11 @@ const GameScreen = ({
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
   const [lastScore, setLastScore] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
-  const [scoreAnimationComplete, setScoreAnimationComplete] = useState(false);
+  const [gameWinner, setGameWinner] = useState(null);
+  const [showWinnerDisplay, setShowWinnerDisplay] = useState(false);
+  const [inputDisabled, setInputDisabled] = useState(false);
 
+  // データ読み込み
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -58,7 +61,54 @@ const GameScreen = ({
     loadData();
   }, [dataUrl, setWordData]);
 
+  // 勝者判定関数
+  const checkForWinner = (teams) => {
+    // 失格していないチーム数をカウント
+    const remainingTeams = teams.filter(team => !team.isOut);
+    
+    // 残り1チームの場合は勝者確定
+    if (remainingTeams.length === 1) {
+      return remainingTeams[0];
+    }
+    
+    return null;
+  };
+
+  // 次のチームへの移行関数
+  const moveToNextTeam = (teams) => {
+    console.log('Moving to next team');
+    
+    // 次のチームを決定
+    let nextTeamIndex = (currentTeamIndex + 1) % teams.length;
+    
+    // 失格チームはスキップ
+    while (teams[nextTeamIndex].isOut && teams.some(team => !team.isOut)) {
+      nextTeamIndex = (nextTeamIndex + 1) % teams.length;
+      if (nextTeamIndex === currentTeamIndex) break;
+    }
+    
+    // ラウンド数の更新
+    if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
+      setRoundNumber(prevRound => prevRound + 1);
+    }
+    
+    console.log('Setting next team to:', nextTeamIndex);
+    setCurrentTeamIndex(nextTeamIndex);
+    
+    // 入力を再有効化
+    setTimeout(() => {
+      setInputDisabled(false);
+      console.log('Input enabled for next team');
+    }, 100);
+  };
+
+  // 単語選択ハンドラ
   const handleSelectWord = (word) => {
+    if (inputDisabled || showScoreAnimation) {
+      console.log('Cannot select word - input disabled or animation in progress');
+      return;
+    }
+    
     if (!usedWords.includes(word.name)) {
       setSelectedWord(word);
       
@@ -73,8 +123,18 @@ const GameScreen = ({
     }
   };
 
+  // スキップハンドラ
   const handleSkip = () => {
+    if (inputDisabled || showScoreAnimation) {
+      console.log('Cannot skip - input disabled or animation in progress');
+      return;
+    }
+    
     if (gameTeams[currentTeamIndex].isOut) return;
+    
+    // 入力無効化
+    setInputDisabled(true);
+    console.log('Input disabled for skip operation');
     
     // ヒストリーに記録
     setGameHistory([
@@ -92,132 +152,126 @@ const GameScreen = ({
     // 選択をクリア
     setSelectedWord(null);
     
-    // 次のチームを決定
-    let nextTeamIndex = (currentTeamIndex + 1) % gameTeams.length;
-    while (
-      gameTeams[nextTeamIndex].isOut && 
-      gameTeams.some(team => !team.isOut)
-    ) {
-      nextTeamIndex = (nextTeamIndex + 1) % gameTeams.length;
-      if (nextTeamIndex === currentTeamIndex) break;
-    }
-    
-    // スキップ表示のための等待時間
-    const skipAnimationDuration = 500;
-    
+    // 遅延してから次のチームへ
     setTimeout(() => {
-      // ラウンド数の更新
-      if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
-        setRoundNumber(prevRound => prevRound + 1);
-      }
-      
-      // チームの切り替え
-      setCurrentTeamIndex(nextTeamIndex);
-    }, skipAnimationDuration);
+      moveToNextTeam(gameTeams);
+    }, 500);
   };
 
+  // 単語選択確定ハンドラ
   const handleConfirmSelection = () => {
-    if (!selectedWord) return;
+    if (!selectedWord || inputDisabled || showScoreAnimation) {
+      console.log('Cannot confirm - no selection, input disabled, or animation in progress');
+      return;
+    }
     
+    // 入力無効化
+    setInputDisabled(true);
+    console.log('Input disabled for score calculation');
+    
+    // スコア計算
     const currentTeam = gameTeams[currentTeamIndex];
     const newScore = currentTeam.score + selectedWord.value;
     const isOut = newScore > targetScore;
     
-    // アニメーション用に前回のスコアを保存
-    setLastScore(currentTeam.score);
-    setAnimatedScore(currentTeam.score);
-    setScoreAnimationComplete(false); // アニメーション開始時にリセット
-    
-    // Update team score
+    // チームスコア更新
     const updatedTeams = [...gameTeams];
     updatedTeams[currentTeamIndex] = {
-      ...currentTeam,
+      ...currentTeam, 
       score: newScore,
-      isOut
+      isOut: isOut
     };
     setGameTeams(updatedTeams);
     
-    // スコアアニメーションの開始
-    setShowScoreAnimation(true);
-    
-    // Add to history
+    // 履歴に追加
     setGameHistory([
       ...gameHistory,
       {
         team: currentTeam.name,
         word: selectedWord.name,
         wordValue: selectedWord.value,
-        newScore: newScore,
+        newScore,
         isOut,
         round: roundNumber
       }
     ]);
     
-    // Mark word as used
+    // 使用済み単語に追加
     setUsedWords([...usedWords, selectedWord.name]);
     
-    // Clear selection
+    // 選択解除
     setSelectedWord(null);
     
-    // アニメーションのためのインターバル
-    const scoreInterval = setInterval(() => {
-      setAnimatedScore(prevScore => {
-        const nextScore = prevScore + Math.ceil((newScore - prevScore) / 10);
-        if (nextScore >= newScore) {
-          clearInterval(scoreInterval);
-          // アニメーション完了を通知
-          setScoreAnimationComplete(true);
-          return newScore;
-        }
-        return nextScore;
+    // アニメーション用のスコア設定
+    setLastScore(currentTeam.score);
+    setAnimatedScore(currentTeam.score);
+    
+    // アニメーション開始
+    setShowScoreAnimation(true);
+    
+    // スコアアニメーション
+    let animationStep = 0;
+    const animationSteps = 10;
+    const scoreDiff = newScore - currentTeam.score;
+    const stepSize = Math.max(1, Math.ceil(scoreDiff / animationSteps));
+    
+    const animationTimer = setInterval(() => {
+      setAnimatedScore(prev => {
+        const next = prev + stepSize;
+        return next >= newScore ? newScore : next;
       });
+      
+      animationStep++;
+      if (animationStep >= animationSteps) {
+        clearInterval(animationTimer);
+        finishAnimation();
+      }
     }, 50);
     
-    // アニメーション完了をチェックするインターバル
-    const checkInterval = setInterval(() => {
-      if (scoreAnimationComplete) {
-        clearInterval(checkInterval);
-        
-        // 失格時のアニメーション効果（スコアアニメーション完了後）
-        if (isOut) {
-          const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
-          if (teamPanel) {
-            teamPanel.classList.add('team-out-animation');
-            setTimeout(() => {
-              teamPanel.classList.remove('team-out-animation');
-            }, 1000);
-          }
-        }
-        
-        // アニメーション終了処理
-        setTimeout(() => {
-          setShowScoreAnimation(false);
-          
-          // 次のチームへの移行を遅延
+    // アニメーション完了後の処理
+    const finishAnimation = () => {
+      // 失格エフェクト
+      if (isOut) {
+        const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
+        if (teamPanel) {
+          teamPanel.classList.add('team-out-animation');
           setTimeout(() => {
-            // 次のチームを決定
-            let nextTeamIndex = (currentTeamIndex + 1) % gameTeams.length;
-            while (
-              updatedTeams[nextTeamIndex].isOut && 
-              updatedTeams.some(team => !team.isOut)
-            ) {
-              nextTeamIndex = (nextTeamIndex + 1) % gameTeams.length;
-              if (nextTeamIndex === currentTeamIndex) break;
-            }
-            
-            // ラウンド数の更新
-            if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
-              setRoundNumber(prevRound => prevRound + 1);
-            }
-            
-            // チームの切り替え
-            setCurrentTeamIndex(nextTeamIndex);
-          }, 500);
-        }, 1000);
+            teamPanel.classList.remove('team-out-animation');
+          }, 600);
+        }
       }
-    }, 100);
+      
+      // 勝者判定
+      let winner = null;
+      if (isOut) {
+        winner = checkForWinner(updatedTeams);
+        if (winner) {
+          setGameWinner(winner);
+        }
+      }
+      
+      // アニメーション完了後の遅延処理
+      setTimeout(() => {
+        setShowScoreAnimation(false);
+        
+        // 勝者がいる場合は表示
+        if (winner) {
+          setTimeout(() => {
+            setShowWinnerDisplay(true);
+            setInputDisabled(false);
+            console.log('Game over - winner displayed');
+          }, 500);
+        } else {
+          // 勝者がいない場合は次のチームへ
+          setTimeout(() => {
+            moveToNextTeam(updatedTeams);
+          }, 300);
+        }
+      }, 700);
+    };
   };
 
+  // ターゲットスコア変更
   const handleTargetScoreChange = (e) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value) && value > 0) {
@@ -252,30 +306,66 @@ const GameScreen = ({
       
       <div className="grid-container">
         <div className="game-area">
-          <Paper className="target-score" elevation={3} sx={{ bgcolor: 'background.lightGreen', borderRadius: 2, border: '1px solid #81c784' }}>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Typography variant="h5" component="span" sx={{ color: 'success.dark', fontWeight: 'bold' }}>
-                目標スコア:
+          {showWinnerDisplay ? (
+            <Paper elevation={4} sx={{ 
+              bgcolor: 'background.highlight', 
+              borderRadius: 3, 
+              border: '2px solid #ffc107', 
+              p: 3, 
+              textAlign: 'center',
+              boxShadow: '0 5px 20px rgba(255, 193, 7, 0.3)',
+              mb: 3,
+              animation: 'winnerDisplay 1s ease-in-out',
+            }}>
+              <Typography variant="h4" sx={{ color: 'warning.dark', fontWeight: 'bold', mb: 2 }}>
+                <span style={{ animation: 'trophy 1.5s infinite', display: 'inline-block' }}>🏆</span> 勝者 <span style={{ animation: 'trophy 1.5s infinite 0.5s', display: 'inline-block' }}>🏆</span>
               </Typography>
-              <TextField
-                type="number"
-                value={targetScore}
-                onChange={handleTargetScoreChange}
-                variant="outlined"
-                size="small"
-                sx={{ width: 150 }}
-              />
-            </Box>
-            
-            <Box mt={2} display="flex" alignItems="center" justifyContent="space-between">
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                <Chip label={`ラウンド: ${roundNumber}`} color="primary" size="small" sx={{ fontWeight: 'bold' }} />
+              <Typography variant="h5" sx={{ color: 'primary.dark', fontWeight: 'bold' }}>
+                {gameWinner?.name}
               </Typography>
-              <Typography variant="body2">
-                <span>ターン: <strong>{gameTeams[currentTeamIndex].name}</strong></span>
-              </Typography>
-            </Box>
-          </Paper>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Typography variant="body1" sx={{ mr: 2 }}>
+                  最終スコア: <strong>{gameWinner?.score}</strong>
+                </Typography>
+                <Typography variant="body1">
+                  目標との差: <strong>{Math.abs(gameWinner?.score - targetScore)}</strong>
+                </Typography>
+              </Box>
+              <Button 
+                variant="contained" 
+                color="warning" 
+                onClick={onResetGame}
+                sx={{ mt: 3, minWidth: 200, py: 1 }}
+              >
+                ゲームを終了する
+              </Button>
+            </Paper>
+          ) : (
+            <Paper className="target-score" elevation={3} sx={{ bgcolor: 'background.lightGreen', borderRadius: 2, border: '1px solid #81c784' }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Typography variant="h5" component="span" sx={{ color: 'success.dark', fontWeight: 'bold' }}>
+                  目標スコア:
+                </Typography>
+                <TextField
+                  type="number"
+                  value={targetScore}
+                  onChange={handleTargetScoreChange}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 150 }}
+                />
+              </Box>
+              
+              <Box mt={2} display="flex" alignItems="center" justifyContent="space-between">
+                <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Chip label={`ラウンド: ${roundNumber}`} color="primary" size="small" sx={{ fontWeight: 'bold' }} />
+                </Typography>
+                <Typography variant="body2">
+                  <span>ターン: <strong>{gameTeams[currentTeamIndex].name}</strong></span>
+                </Typography>
+              </Box>
+            </Paper>
+          )}
           
           <Grid container spacing={2}>
             {gameTeams.map((team, index) => (
@@ -349,6 +439,7 @@ const GameScreen = ({
             selectedWord={selectedWord}
             onSelectWord={handleSelectWord}
             onSkip={handleSkip}
+            disabled={inputDisabled || showScoreAnimation || showWinnerDisplay}
           />
         </div>
       </div>
