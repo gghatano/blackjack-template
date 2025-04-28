@@ -43,13 +43,17 @@ const GameScreen = ({
   const [inputDisabled, setInputDisabled] = useState(false);
   const [activeTab, setActiveTab] = useState('words'); // モバイル用タブ切替
 
+  // スプレッドシートから列ヘッダーを取得する関数
+  const [columnHeaders, setColumnHeaders] = useState({ column1: '', column2: '' });
+  
   // データ読み込み
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
         const data = await fetchSheetData(dataUrl);
-        setWordData(data);
+        setWordData(data.items);
+        setColumnHeaders(data.headers);
         setError(null);
       } catch (err) {
         console.error('Error loading sheet data:', err);
@@ -396,6 +400,30 @@ const GameScreen = ({
                   size="small"
                   sx={{ width: 150 }}
                 />
+              </Box>
+              
+              {/* ゲーム説明の追加 - スプレッドシートの列ヘッダーと基準点を使用 */}
+              <Box mt={2} p={2} bgcolor="rgba(255, 255, 255, 0.6)" borderRadius={2}>
+                <Typography variant="body2" sx={{ color: 'text.primary', lineHeight: 1.5 }}>
+                  <Box component="span" sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                    <span style={{ marginRight: '8px', fontSize: '1.1em', color: '#303f9f' }}>♠</span>
+                    <span>
+                      {/* 列ヘッダーと基準点をチェックして具体的な説明文を生成 */}
+                      {wordData && wordData.length > 0 ? (
+                        <>
+                          リストから<strong>{columnHeaders.column1}</strong>を選んで、
+                          その<strong>{columnHeaders.column2}</strong>を合計して、
+                          <strong>{targetScore.toLocaleString()}</strong>点にできるだけ近づけてください。
+                          <span style={{ color: '#d32f2f', marginLeft: '4px' }}>
+                            <strong>目標スコアを超えると失格</strong>になります！
+                          </span>
+                        </>
+                      ) : (
+                        <>リストから単語を選んで、{targetScore.toLocaleString()}点にできるだけ近づけてください。<span style={{ color: '#d32f2f' }}><strong>目標スコアを超えると失格</strong></span>になります！</>
+                      )}
+                    </span>
+                  </Box>
+                </Typography>
               </Box>
               
               <Box mt={2} display="flex" alignItems="center" justifyContent="space-between">

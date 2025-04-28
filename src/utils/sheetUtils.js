@@ -17,7 +17,12 @@ const parseCsvData = (csvData) => {
   const lines = csvData.split('\n');
   
   // If we have no data, return empty array
-  if (lines.length <= 1) return [];
+  if (lines.length <= 1) return { items: [], headers: { column1: '単語', column2: '数値' } };
+  
+  // Get headers from the first line
+  const headers = lines[0].split(',');
+  const column1 = headers[0] ? headers[0].trim() : '単語';
+  const column2 = headers[1] ? headers[1].trim() : '数値';
   
   // Process data (assuming first column is name, second column is value)
   const results = [];
@@ -42,7 +47,10 @@ const parseCsvData = (csvData) => {
     results.push({ name, value });
   }
   
-  return results;
+  return { 
+    items: results,
+    headers: { column1, column2 }
+  };
 };
 
 // Main function to fetch sheet data
