@@ -187,7 +187,7 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
                   }}
                 />
               </Grid>
-            ))
+            ))}
             
             <Grid item xs={12} sx={{ mt: 2 }}>
               <Divider sx={{ mb: 2 }}>
