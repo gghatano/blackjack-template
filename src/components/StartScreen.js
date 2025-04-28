@@ -94,7 +94,8 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+              whiteSpace: 'nowrap' // 改行を防止
             }}>
               <span style={{ fontSize: '1.5em', marginRight: '0.2em' }}>♠</span>
               なんでもブラックジャック

@@ -38,7 +38,7 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
       sx={{
         p: 2,
         border: isActive ? '2px solid #2196f3' : '1px solid #ddd',
-        backgroundColor: team.isOut ? '#f5f5f5' : 'white',
+        backgroundColor: team.isOut ? '#f5f5f5' : isActive ? '#fff8fa' : 'white', // アクティブなチームは薄いピンク色に
         opacity: team.isOut ? 0.7 : 1,
         borderRadius: 2,
         boxShadow: isActive 
@@ -54,7 +54,7 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
           left: 0,
           width: '100%',
           height: '4px',
-          backgroundColor: 'primary.main',
+          background: 'linear-gradient(to right, #2196f3, #f50057)',
           borderTopLeftRadius: '8px',
           borderTopRightRadius: '8px'
         } : {}

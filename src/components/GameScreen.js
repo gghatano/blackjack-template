@@ -43,6 +43,9 @@ const GameScreen = ({
   const [inputDisabled, setInputDisabled] = useState(false);
   const [activeTab, setActiveTab] = useState('words'); // モバイル用タブ切替
 
+  // スプレッドシートから列ヘッダーを取得する関数
+  const [columnHeaders, setColumnHeaders] = useState({ column1: '', column2: '' });
+  
   // データ読み込み
   useEffect(() => {
     const loadData = async () => {
@@ -50,6 +53,30 @@ const GameScreen = ({
       try {
         const data = await fetchSheetData(dataUrl);
         setWordData(data);
+        
+        // ヘッダー情報の取得を試みる
+        try {
+          const response = await fetch(dataUrl);
+          const text = await response.text();
+          // CSVフォーマットのヘッダー行を取得しようとする
+          const csvMatch = text.match(/<title>([^<]+)<\/title>/);
+          if (csvMatch && csvMatch[1]) {
+            const title = csvMatch[1];
+            // タイトルから情報を抽出しようと試みる
+            const titleParts = title.split(' - ');
+            if (titleParts.length > 0) {
+              setColumnHeaders({
+                column1: '単語',
+                column2: '数値'
+              });
+            }
+          }
+        } catch (headerErr) {
+          console.log('Header extraction failed:', headerErr);
+          // ヘッダー取得失敗時はデフォルトの表示を使用
+          setColumnHeaders({ column1: '単語', column2: '数値' });
+        }
+        
         setError(null);
       } catch (err) {
         console.error('Error loading sheet data:', err);
@@ -397,6 +424,17 @@ const GameScreen = ({
                   sx={{ width: 150 }}
                 />
               </Box>
+              
+              {/* ゲーム説明の追加 */}
+              <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary', fontStyle: 'italic', lineHeight: 1.4 }}>
+                <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ marginRight: '6px', fontSize: '1.1em' }}>♠</span>
+                  {wordData && wordData.length > 0 && wordData[0]?.name ? 
+                    <span><b>{columnHeaders.column1}</b>を上手に選んで、<b>{columnHeaders.column2}</b>の合計を<b>{targetScore.toLocaleString()}</b>点に近づけてください！</span> : 
+                    <span>単語を選んで、スコアを{targetScore.toLocaleString()}点に近づけてください！</span>
+                  }
+                </Box>
+              </Typography>
               
               <Box mt={2} display="flex" alignItems="center" justifyContent="space-between">
                 <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
