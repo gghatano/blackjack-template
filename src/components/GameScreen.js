@@ -411,13 +411,15 @@ const GameScreen = ({
                       {/* 列ヘッダーと基準点をチェックして具体的な説明文を生成 */}
                       {wordData && wordData.length > 0 ? (
                         <>
-                          リストから<strong>{columnHeaders.column1}</strong>を選んで、{wordData[0]?.name ? 
-                            `その<strong>${columnHeaders.column2}</strong>を合計して、`: ''}
+                          リストから<strong>{columnHeaders.column1}</strong>を選んで、
+                          その<strong>{columnHeaders.column2}</strong>を合計して、
                           <strong>{targetScore.toLocaleString()}</strong>点にできるだけ近づけてください。
-                          <strong>目標点を超えると失格</strong>になります！
+                          <span style={{ color: '#d32f2f', marginLeft: '4px' }}>
+                            <strong>目標スコアを超えると失格</strong>になります！
+                          </span>
                         </>
                       ) : (
-                        <>リストから単語を選んで、{targetScore.toLocaleString()}点にできるだけ近づけてください。目標点を超えると失格になります！</>
+                        <>リストから単語を選んで、{targetScore.toLocaleString()}点にできるだけ近づけてください。<span style={{ color: '#d32f2f' }}><strong>目標スコアを超えると失格</strong></span>になります！</>
                       )}
                     </span>
                   </Box>

@@ -24,7 +24,7 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
     { name: 'チーム2', score: 0 },
   ]);
   const [dataUrl, setDataUrl] = useState(defaultUrl || '');
-  const [targetScore, setTargetScore] = useState(100);
+  const [targetScore, setTargetScore] = useState(90000);
 
   const handleTeamNameChange = (index, value) => {
     const newTeams = [...teams];
