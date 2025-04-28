@@ -12,9 +12,10 @@ function App() {
   const [wordData, setWordData] = useState([]);
   const [targetScore, setTargetScore] = useState(90000);
 
-  const handleStartGame = (teamData, url) => {
+  const handleStartGame = (teamData, url, score) => {
     setTeams(teamData);
     setDataUrl(url || dataUrl);
+    if (score) setTargetScore(score);
     setGameStarted(true);
   };
 
