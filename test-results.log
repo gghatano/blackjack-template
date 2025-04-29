@@ -1,0 +1,224 @@
+
+> word-score-game@1.0.0 test
+> react-scripts test
+
+(node:37071) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS src/__tests__/GameScreen.test.js
+  ● Console
+
+    console.error
+      Warning: An update to GameScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+          at GameScreen (/Users/thatano/word-score-game/src/components/GameScreen.js:22:3)
+          at DefaultPropsProvider (/Users/thatano/word-score-game/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+          at RtlProvider (/Users/thatano/word-score-game/node_modules/@mui/system/RtlProvider/index.js:19:7)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:52:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+      54 |         const data = await fetchSheetData(dataUrl);
+      55 |         setWordData(data.items);
+    > 56 |         setColumnHeaders(data.headers);
+         |         ^
+      57 |         setError(null);
+      58 |       } catch (err) {
+      59 |         console.error('Error loading sheet data:', err);
+
+      at printWarning (node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom.development.js:27628:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom.development.js:25547:5)
+      at setColumnHeaders (node_modules/react-dom/cjs/react-dom.development.js:16708:7)
+      at loadData (src/components/GameScreen.js:56:9)
+
+    console.error
+      Warning: An update to GameScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+          at GameScreen (/Users/thatano/word-score-game/src/components/GameScreen.js:22:3)
+          at DefaultPropsProvider (/Users/thatano/word-score-game/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+          at RtlProvider (/Users/thatano/word-score-game/node_modules/@mui/system/RtlProvider/index.js:19:7)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:52:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+      55 |         setWordData(data.items);
+      56 |         setColumnHeaders(data.headers);
+    > 57 |         setError(null);
+         |         ^
+      58 |       } catch (err) {
+      59 |         console.error('Error loading sheet data:', err);
+      60 |         setError('スプレッドシートデータの読み込みに失敗しました。');
+
+      at printWarning (node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom.development.js:27628:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom.development.js:25547:5)
+      at setError (node_modules/react-dom/cjs/react-dom.development.js:16708:7)
+      at loadData (src/components/GameScreen.js:57:9)
+
+    console.error
+      Warning: An update to GameScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+          at GameScreen (/Users/thatano/word-score-game/src/components/GameScreen.js:22:3)
+          at DefaultPropsProvider (/Users/thatano/word-score-game/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+          at RtlProvider (/Users/thatano/word-score-game/node_modules/@mui/system/RtlProvider/index.js:19:7)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:52:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+      60 |         setError('スプレッドシートデータの読み込みに失敗しました。');
+      61 |       } finally {
+    > 62 |         setLoading(false);
+         |         ^
+      63 |       }
+      64 |     };
+      65 |
+
+      at printWarning (node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom.development.js:27628:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom.development.js:25547:5)
+      at setLoading (node_modules/react-dom/cjs/react-dom.development.js:16708:7)
+      at loadData (src/components/GameScreen.js:62:9)
+
+    console.error
+      Warning: An update to GameScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+          at GameScreen (/Users/thatano/word-score-game/src/components/GameScreen.js:22:3)
+          at DefaultPropsProvider (/Users/thatano/word-score-game/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+          at RtlProvider (/Users/thatano/word-score-game/node_modules/@mui/system/RtlProvider/index.js:19:7)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:52:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+      54 |         const data = await fetchSheetData(dataUrl);
+      55 |         setWordData(data.items);
+    > 56 |         setColumnHeaders(data.headers);
+         |         ^
+      57 |         setError(null);
+      58 |       } catch (err) {
+      59 |         console.error('Error loading sheet data:', err);
+
+      at printWarning (node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom.development.js:27628:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom.development.js:25547:5)
+      at setColumnHeaders (node_modules/react-dom/cjs/react-dom.development.js:16708:7)
+      at loadData (src/components/GameScreen.js:56:9)
+
+    console.error
+      Warning: An update to GameScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+          at GameScreen (/Users/thatano/word-score-game/src/components/GameScreen.js:22:3)
+          at DefaultPropsProvider (/Users/thatano/word-score-game/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+          at RtlProvider (/Users/thatano/word-score-game/node_modules/@mui/system/RtlProvider/index.js:19:7)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:52:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+      55 |         setWordData(data.items);
+      56 |         setColumnHeaders(data.headers);
+    > 57 |         setError(null);
+         |         ^
+      58 |       } catch (err) {
+      59 |         console.error('Error loading sheet data:', err);
+      60 |         setError('スプレッドシートデータの読み込みに失敗しました。');
+
+      at printWarning (node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom.development.js:27628:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom.development.js:25547:5)
+      at setError (node_modules/react-dom/cjs/react-dom.development.js:16708:7)
+      at loadData (src/components/GameScreen.js:57:9)
+
+    console.error
+      Warning: An update to GameScreen inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+          at GameScreen (/Users/thatano/word-score-game/src/components/GameScreen.js:22:3)
+          at DefaultPropsProvider (/Users/thatano/word-score-game/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+          at RtlProvider (/Users/thatano/word-score-game/node_modules/@mui/system/RtlProvider/index.js:19:7)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:52:5)
+          at ThemeProvider (/Users/thatano/word-score-game/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+      60 |         setError('スプレッドシートデータの読み込みに失敗しました。');
+      61 |       } finally {
+    > 62 |         setLoading(false);
+         |         ^
+      63 |       }
+      64 |     };
+      65 |
+
+      at printWarning (node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom.development.js:27628:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom.development.js:25547:5)
+      at setLoading (node_modules/react-dom/cjs/react-dom.development.js:16708:7)
+      at loadData (src/components/GameScreen.js:62:9)
+
+(node:37073) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS src/__tests__/TeamPanel.test.js
+(node:37072) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS src/__tests__/WordList.test.js
+PASS src/__tests__/App.test.js
+(node:37070) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS src/__tests__/StartScreen.test.js
+
+Test Suites: 1 skipped, 5 passed, 5 of 6 total
+Tests:       1 skipped, 22 passed, 23 total
+Snapshots:   0 total
+Time:        4.758 s, estimated 7 s
+Ran all test suites related to changed files.
+

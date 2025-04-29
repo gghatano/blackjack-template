@@ -1,4 +1,4 @@
-import axios from 'axios';
+const axios = require('axios');
 
 // Extract the spreadsheet ID from the URL
 const extractSpreadsheetId = (url) => {
@@ -54,7 +54,7 @@ const parseCsvData = (csvData) => {
 };
 
 // Main function to fetch sheet data
-export const fetchSheetData = async (url) => {
+const fetchSheetData = async (url) => {
   try {
     // Extract spreadsheet ID
     const spreadsheetId = extractSpreadsheetId(url);
@@ -74,4 +74,8 @@ export const fetchSheetData = async (url) => {
     console.error('Error fetching spreadsheet data:', error);
     throw new Error('スプレッドシートデータの取得に失敗しました');
   }
+};
+
+module.exports = {
+  fetchSheetData
 };
