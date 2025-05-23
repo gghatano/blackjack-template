@@ -225,9 +225,16 @@ code {
 }
 
 .word-item.disabled {
-  color: #aaa;
-  background-color: #f0f0f0;
+  color: #666;
+  background-color: #f8f8f8;
   cursor: not-allowed;
+  border-left: 3px solid #ccc;
+}
+
+.word-item.disabled .word-score {
+  background-color: #e0e0e0;
+  color: #666;
+  font-weight: bold;
 }
 
 .team-panel {
