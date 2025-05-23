@@ -6,7 +6,6 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
   const [scoreClass, setScoreClass] = useState('');
   const [scoreDisplay, setScoreDisplay] = useState(team.score);
   const [showOutMessage, setShowOutMessage] = useState(team.isOut);
-  const remainingToTarget = targetScore - team.score;
   
   // スコアアニメーション効果の管理
   useEffect(() => {
@@ -28,7 +27,7 @@ const TeamPanel = ({ id, team, isActive, targetScore, selectedWord, onConfirm, s
       // アニメーション終了後、失格表示をチームのステータスに合わせる
       setShowOutMessage(team.isOut);
     }
-  }, [showAnimation, animatedScore, team.score, team.isOut, targetScore]);
+  }, [showAnimation, animatedScore, team.score, team.isOut, targetScore, scoreClass]);
   
   return (
     <Paper 
