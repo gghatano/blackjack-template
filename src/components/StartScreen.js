@@ -205,7 +205,7 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
             <Grid item xs={12}>
               {dataSourceType === 'custom' ? (
                 // カスタムデータの場合は、カスタムURLカード内で目標スコアを設定するため、ここでは不要
-                <></>
+                null
               ) : (
                 // サンプルデータの場合は自動設定されるが、必要に応じて変更可能
                 <TextField
@@ -220,8 +220,8 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
                   helperText="サンプルデータから自動設定されますが、必要に応じて変更可能です"
                   sx={{ mb: 2 }}
                 />
-              )
-            )}
+              )}
+            </Grid>
             
             <Grid item xs={12}>
               <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
