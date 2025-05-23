@@ -146,9 +146,12 @@ const GameScreen = ({
     setInputDisabled(true);
     console.log('Input disabled for skip operation');
     
-    // ヒストリーに記録
-    setGameHistory([
-      ...gameHistory,
+    // 選択をクリア
+    setSelectedWord(null);
+    
+    // スキップの履歴を追加（スキップはアニメーションなしなのですぐ追加）
+    setGameHistory(prevHistory => [
+      ...prevHistory,
       {
         team: gameTeams[currentTeamIndex].name,
         word: 'スキップ',
@@ -158,9 +161,6 @@ const GameScreen = ({
         isSkip: true
       }
     ]);
-    
-    // 選択をクリア
-    setSelectedWord(null);
     
     // 遅延してから次のチームへ
     setTimeout(() => {
@@ -193,21 +193,18 @@ const GameScreen = ({
     };
     setGameTeams(updatedTeams);
     
-    // 履歴に追加
-    setGameHistory([
-      ...gameHistory,
-      {
-        team: currentTeam.name,
-        word: selectedWord.name,
-        wordValue: selectedWord.value,
-        newScore,
-        isOut,
-        round: roundNumber
-      }
-    ]);
-    
     // 使用済み単語に追加
     setUsedWords([...usedWords, selectedWord.name]);
+    
+    // 履歴データを準備（アニメーション完了後に追加するため）
+    const newHistoryRecord = {
+      team: currentTeam.name,
+      word: selectedWord.name,
+      wordValue: selectedWord.value,
+      newScore,
+      isOut,
+      round: roundNumber
+    };
     
     // 選択解除
     setSelectedWord(null);
@@ -250,6 +247,9 @@ const GameScreen = ({
           }, 600);
         }
       }
+      
+      // アニメーション完了後に履歴に追加
+      setGameHistory(prevHistory => [...prevHistory, newHistoryRecord]);
       
       // 勝者判定
       let winner = null;
@@ -316,23 +316,37 @@ const GameScreen = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {gameHistory.map((record, index) => (
-            <TableRow key={index}>
-              <TableCell>{record.team}</TableCell>
-              <TableCell>
-                {record.isSkip ? 
-                  <span style={{ color: '#ff9800', fontStyle: 'italic' }}>スキップ</span> : 
-                  record.word
-                }
-              </TableCell>
-              <TableCell align="right">{record.wordValue}</TableCell>
-              <TableCell align="right">{record.newScore}</TableCell>
-              <TableCell align="right">{record.isOut ? 
-                <span style={{ color: 'error.main', fontWeight: 'bold' }}>失格</span> : 
-                <span style={{ color: 'success.main' }}>OK</span>
-              }</TableCell>
-            </TableRow>
-          ))}
+          {gameHistory.slice().reverse().map((record, index) => {
+            const isLatest = index === 0 && gameHistory.length > 0;
+            return (
+              <TableRow 
+                key={gameHistory.length - 1 - index}
+                sx={{
+                  backgroundColor: isLatest ? '#e3f2fd' : 'inherit',
+                  borderLeft: isLatest ? '4px solid #2196f3' : 'none',
+                  fontWeight: isLatest ? 'bold' : 'normal',
+                  '& .MuiTableCell-root': {
+                    fontWeight: isLatest ? 'bold' : 'normal'
+                  }
+                }}
+                className={isLatest ? 'latest-history-row' : ''}
+              >
+                <TableCell>{record.team}</TableCell>
+                <TableCell>
+                  {record.isSkip ? 
+                    <span style={{ color: '#ff9800', fontStyle: 'italic' }}>スキップ</span> : 
+                    record.word
+                  }
+                </TableCell>
+                <TableCell align="right">{record.wordValue}</TableCell>
+                <TableCell align="right">{record.newScore}</TableCell>
+                <TableCell align="right">{record.isOut ? 
+                  <span style={{ color: 'error.main', fontWeight: 'bold' }}>失格</span> : 
+                  <span style={{ color: 'success.main' }}>OK</span>
+                }</TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>

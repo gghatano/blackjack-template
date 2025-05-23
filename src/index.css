@@ -24,6 +24,12 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes newHistoryHighlight {
+  0% { background-color: #ffeb3b; transform: translateX(-5px); }
+  50% { background-color: #e3f2fd; transform: translateX(0); }
+  100% { background-color: #e3f2fd; transform: translateX(0); }
+}
+
 @keyframes slideInRight {
   from { transform: translateX(20px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -51,6 +57,10 @@
 
 .score-change-animation {
   animation: scorePulse 0.5s ease-in-out;
+}
+
+.latest-history-row {
+  animation: newHistoryHighlight 1s ease-in-out;
 }
 
 /* レスポンシブ表示用のクラス */
