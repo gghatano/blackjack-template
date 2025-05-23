@@ -12,10 +12,39 @@ import {
   MenuItem,
   Divider,
   Card,
-  CardContent
+  CardContent,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormLabel
 } from '@mui/material';
 
 const StartScreen = ({ onStartGame, defaultUrl }) => {
+  // サンプルデータの定義
+  const sampleDataSets = [
+    {
+      id: 'event-venues',
+      title: 'イベント会場の収容観客数',
+      url: 'https://docs.google.com/spreadsheets/d/1Y-gSB3luEaQ8YVCWtBIxZ-xdAurTzlpDuwQ3Y7pRjww/edit?gid=0#gid=0',
+      description: '東京ドーム、横浜アリーナなどのイベント会場とその収容人数',
+      targetScore: 90000
+    },
+    {
+      id: 'baseball-homeruns',
+      title: 'プロ野球選手の通算本塁打数',
+      url: 'https://docs.google.com/spreadsheets/d/1-JpmCqCFV4DzznhJGlMUtuR-ieWzE_bQivAQtkAAQBE/edit',
+      description: '有名プロ野球選手の通算本塁打数データ',
+      targetScore: 500
+    },
+    {
+      id: 'comedian-subscribers',
+      title: 'お笑い芸人のYouTube登録者数',
+      url: 'https://docs.google.com/spreadsheets/d/10FYr1dt4X--3HX6OX9wF_oRDuqO4xdwtJR9cHJQ57r0/edit?usp=drivesdk',
+      description: '人気お笑い芸人のYouTubeチャンネル登録者数',
+      targetScore: 1000000
+    }
+  ];
+
   const [teamCount, setTeamCount] = useState(2);
   const [teams, setTeams] = useState([
     { name: 'チーム1', score: 0 },
@@ -23,6 +52,11 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
   ]);
   const [dataUrl, setDataUrl] = useState(defaultUrl || '');
   const [targetScore, setTargetScore] = useState(90000);
+  
+  // データソース選択用のstate
+  const [dataSourceType, setDataSourceType] = useState('sample'); // 'sample' or 'custom'
+  const [selectedSampleData, setSelectedSampleData] = useState('event-venues');
+  const [customUrl, setCustomUrl] = useState('');
 
   const handleTeamNameChange = (index, value) => {
     const newTeams = [...teams];
@@ -52,7 +86,32 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onStartGame(teams, dataUrl, targetScore);
+    
+    // データソースに応じてURLとスコアを決定
+    let finalUrl, finalTargetScore;
+    
+    if (dataSourceType === 'sample') {
+      const selectedData = sampleDataSets.find(data => data.id === selectedSampleData);
+      finalUrl = selectedData.url;
+      finalTargetScore = selectedData.targetScore;
+    } else {
+      finalUrl = customUrl;
+      finalTargetScore = targetScore;
+    }
+    
+    onStartGame(teams, finalUrl, finalTargetScore);
+  };
+  
+  // サンプルデータ選択時のハンドラ
+  const handleSampleDataChange = (e) => {
+    const dataId = e.target.value;
+    setSelectedSampleData(dataId);
+    
+    // 選択されたサンプルデータのターゲットスコアを自動設定
+    const selectedData = sampleDataSets.find(data => data.id === dataId);
+    if (selectedData) {
+      setTargetScore(selectedData.targetScore);
+    }
   };
 
   return (
@@ -144,17 +203,24 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
             </Grid>
 
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                type="number"
-                label="目標スコア"
-                value={targetScore}
-                onChange={(e) => setTargetScore(Number(e.target.value))}
-                InputProps={{
-                  inputProps: { min: 1 }
-                }}
-                helperText="ブラックジャックの21のような目標スコアを設定します"
-              />
+              {dataSourceType === 'custom' ? (
+                // カスタムデータの場合は、カスタムURLカード内で目標スコアを設定するため、ここでは不要
+                null
+              ) : (
+                // サンプルデータの場合は自動設定されるが、必要に応じて変更可能
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="目標スコア（サンプルデータから自動設定）"
+                  value={targetScore}
+                  onChange={(e) => setTargetScore(Number(e.target.value))}
+                  InputProps={{
+                    inputProps: { min: 1 }
+                  }}
+                  helperText="サンプルデータから自動設定されますが、必要に応じて変更可能です"
+                  sx={{ mb: 2 }}
+                />
+              )}
             </Grid>
             
             <Grid item xs={12}>
@@ -189,24 +255,121 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
             ))}
             
             <Grid item xs={12} sx={{ mt: 2 }}>
-              <Divider sx={{ mb: 2 }}>
+              <Divider sx={{ mb: 3 }}>
                 <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 'medium' }}>
                   データ設定
                 </Typography>
               </Divider>
               
-              <Typography variant="subtitle1" color="primary.dark" gutterBottom>
-                単語データのURL
-              </Typography>
+              {/* データソース選択 */}
+              <FormControl component="fieldset" sx={{ mb: 3 }}>
+                <FormLabel component="legend" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.dark' }}>
+                  使用するデータを選んでください
+                </FormLabel>
+                <RadioGroup
+                  value={dataSourceType}
+                  onChange={(e) => setDataSourceType(e.target.value)}
+                  sx={{ ml: 1 }}
+                >
+                  <FormControlLabel 
+                    value="sample" 
+                    control={<Radio />} 
+                    label="サンプルデータを使用する" 
+                    sx={{ mb: 1 }}
+                  />
+                  <FormControlLabel 
+                    value="custom" 
+                    control={<Radio />} 
+                    label="自分で作ったデータを使用する" 
+                  />
+                </RadioGroup>
+              </FormControl>
               
-              <TextField
-                fullWidth
-                label="データ URL"
-                value={dataUrl}
-                onChange={(e) => setDataUrl(e.target.value)}
-                helperText="Google SpreadsheetのURLを入力してください"
-                sx={{ mb: 2 }}
-              />
+              {/* サンプルデータ選択 */}
+              {dataSourceType === 'sample' && (
+                <Card variant="outlined" sx={{ mb: 3, bgcolor: '#e8f5e9', borderColor: '#4caf50' }}>
+                  <CardContent>
+                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'success.dark', display: 'flex', alignItems: 'center' }}>
+                      <span style={{ marginRight: '8px' }}>📊</span>
+                      サンプルデータ選択
+                    </Typography>
+                    
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                      <InputLabel id="sample-data-label">サンプルデータ</InputLabel>
+                      <Select
+                        labelId="sample-data-label"
+                        value={selectedSampleData}
+                        label="サンプルデータ"
+                        onChange={handleSampleDataChange}
+                      >
+                        {sampleDataSets.map((dataSet) => (
+                          <MenuItem key={dataSet.id} value={dataSet.id}>
+                            <Box>
+                              <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                                {dataSet.title}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                {dataSet.description}
+                              </Typography>
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    
+                    {/* 選択されたサンプルデータの詳細 */}
+                    {(() => {
+                      const selectedData = sampleDataSets.find(data => data.id === selectedSampleData);
+                      return selectedData ? (
+                        <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(255, 255, 255, 0.7)', borderRadius: 2 }}>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>テーマ:</strong> {selectedData.title}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>説明:</strong> {selectedData.description}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>推奨目標スコア:</strong> {selectedData.targetScore.toLocaleString()}点
+                          </Typography>
+                        </Box>
+                      ) : null;
+                    })()} 
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* カスタムURL入力 */}
+              {dataSourceType === 'custom' && (
+                <Card variant="outlined" sx={{ mb: 3, bgcolor: '#f3e5f5', borderColor: '#9c27b0' }}>
+                  <CardContent>
+                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'secondary.dark', display: 'flex', alignItems: 'center' }}>
+                      <span style={{ marginRight: '8px' }}>🔗</span>
+                      カスタムデータURL
+                    </Typography>
+                    
+                    <TextField
+                      fullWidth
+                      label="Google Spreadsheet URL"
+                      value={customUrl}
+                      onChange={(e) => setCustomUrl(e.target.value)}
+                      helperText="Google SpreadsheetのURLを入力してください"
+                      sx={{ mb: 2 }}
+                    />
+                    
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="目標スコア"
+                      value={targetScore}
+                      onChange={(e) => setTargetScore(Number(e.target.value))}
+                      InputProps={{
+                        inputProps: { min: 1 }
+                      }}
+                      helperText="ブラックジャックの21のような目標スコアを設定します"
+                    />
+                  </CardContent>
+                </Card>
+              )}
               
               <Card variant="outlined" sx={{ mt: 2, bgcolor: '#f5f9ff', borderColor: '#d0d9ff' }}>
                 <CardContent>
