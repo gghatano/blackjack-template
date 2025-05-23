@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+# 権限を明示的に設定
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -29,3 +35,4 @@ jobs:
         with:
           folder: build
           branch: gh-pages
+          token: ${{ secrets.GITHUB_TOKEN }}
