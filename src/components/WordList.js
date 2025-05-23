@@ -54,13 +54,13 @@ const WordList = ({ words, usedWords, selectedWord, onSelectWord, onSkip, disabl
               borderRadius: 2,
               cursor: isUsed || disabled ? 'not-allowed' : 'pointer',
               backgroundColor: isUsed || disabled
-                ? '#f5f5f5' 
+                ? '#f8f8f8' 
                 : isSelected 
                   ? theme => theme.palette.gameElements.wordItem
                   : 'white',
-              color: isUsed || disabled ? '#aaa' : 'inherit',
-              opacity: disabled ? 0.7 : 1,
-              borderLeft: isSelected ? '4px solid #2196f3' : 'none',
+              color: isUsed || disabled ? '#666' : 'inherit',
+              opacity: disabled ? 0.7 : isUsed ? 0.8 : 1,
+              borderLeft: isSelected ? '4px solid #2196f3' : isUsed ? '3px solid #ccc' : 'none',
               transition: 'all 0.2s ease',
               '&:hover': {
                 backgroundColor: isUsed || disabled
@@ -72,7 +72,39 @@ const WordList = ({ words, usedWords, selectedWord, onSelectWord, onSkip, disabl
               }
             }}
           >
-            <Typography variant="body1">{word.name}</Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              width: '100%'
+            }}>
+              <Typography variant="body1" sx={{ 
+                textDecoration: isUsed ? 'line-through' : 'none',
+                color: isUsed ? '#666' : 'inherit',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                {isUsed && <span style={{ marginRight: '6px', fontSize: '14px' }}>✓</span>}
+                {word.name}
+              </Typography>
+              {isUsed && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: '#666',
+                    backgroundColor: '#e0e0e0',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    ml: 1,
+                    fontSize: '0.75rem'
+                  }}
+                >
+                  {word.value.toLocaleString()}点
+                </Typography>
+              )}
+            </Box>
           </Paper>
         );
       })}
