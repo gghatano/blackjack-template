@@ -12,9 +12,7 @@ import {
   MenuItem,
   Divider,
   Card,
-  CardContent,
-  IconButton,
-  Tooltip
+  CardContent
 } from '@mui/material';
 
 const StartScreen = ({ onStartGame, defaultUrl }) => {

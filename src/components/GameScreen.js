@@ -36,7 +36,6 @@ const GameScreen = ({
   const [gameTeams, setGameTeams] = useState(teams.map(team => ({ ...team, isOut: false })));
   const [roundNumber, setRoundNumber] = useState(1);
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
-  const [lastScore, setLastScore] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
   const [gameWinner, setGameWinner] = useState(null);
   const [showWinnerDisplay, setShowWinnerDisplay] = useState(false);
@@ -210,7 +209,6 @@ const GameScreen = ({
     setSelectedWord(null);
     
     // アニメーション用のスコア設定
-    setLastScore(currentTeam.score);
     setAnimatedScore(currentTeam.score);
     
     // アニメーション開始
