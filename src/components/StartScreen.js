@@ -50,7 +50,6 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
     { name: 'チーム1', score: 0 },
     { name: 'チーム2', score: 0 },
   ]);
-  const [dataUrl, setDataUrl] = useState(defaultUrl || '');
   const [targetScore, setTargetScore] = useState(90000);
   
   // データソース選択用のstate
