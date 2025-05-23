@@ -46,6 +46,3 @@ function App() {
     </ThemeProvider>
   );
 }
-
-export default App;// test comment
-const unusedVariable = 'test';
