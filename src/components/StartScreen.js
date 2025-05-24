@@ -154,7 +154,7 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
               whiteSpace: 'nowrap' // 改行を防止
             }}>
               <span style={{ fontSize: '1.5em', marginRight: '0.2em' }}>♠</span>
-              なんでもブラックジャック
+              "キャパ90000"をWebアプリにしてみた
               <span style={{ fontSize: '1.5em', marginLeft: '0.2em' }}>♥</span>
             </Typography>
           </Box>
