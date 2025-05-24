@@ -53,6 +53,31 @@ const parseCsvData = (csvData) => {
   };
 };
 
+// 配列を5個ずつのグループでシャッフルする関数
+const shuffleInGroups = (array, groupSize = 5) => {
+  if (!Array.isArray(array) || array.length === 0) {
+    return array;
+  }
+  
+  const result = [];
+  
+  // 配列を指定されたサイズのグループに分割
+  for (let i = 0; i < array.length; i += groupSize) {
+    const group = array.slice(i, i + groupSize);
+    
+    // 各グループ内をシャッフル（Fisher-Yates shuffle）
+    const shuffledGroup = [...group];
+    for (let j = shuffledGroup.length - 1; j > 0; j--) {
+      const randomIndex = Math.floor(Math.random() * (j + 1));
+      [shuffledGroup[j], shuffledGroup[randomIndex]] = [shuffledGroup[randomIndex], shuffledGroup[j]];
+    }
+    
+    result.push(...shuffledGroup);
+  }
+  
+  return result;
+};
+
 // Main function to fetch sheet data
 export const fetchSheetData = async (url) => {
   try {
@@ -69,7 +94,15 @@ export const fetchSheetData = async (url) => {
     const response = await axios.get(csvUrl);
     
     // Parse data
-    return parseCsvData(response.data);
+    const parsedData = parseCsvData(response.data);
+    
+    // データを適度にシャッフル（5個ずつのグループで）
+    const shuffledItems = shuffleInGroups(parsedData.items, 5);
+    
+    return {
+      items: shuffledItems,
+      headers: parsedData.headers
+    };
   } catch (error) {
     console.error('Error fetching spreadsheet data:', error);
     throw new Error('スプレッドシートデータの取得に失敗しました');
