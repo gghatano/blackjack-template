@@ -151,11 +151,11 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
               alignItems: 'center',
               justifyContent: 'center',
               textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-              whiteSpace: 'nowrap' // 改行を防止
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }, // レスポンシブ対応
+              textAlign: 'center',
+              lineHeight: 1.2
             }}>
-              <span style={{ fontSize: '1.5em', marginRight: '0.2em' }}>♠</span>
               "キャパ90000"をWebアプリにしてみた
-              <span style={{ fontSize: '1.5em', marginLeft: '0.2em' }}>♥</span>
             </Typography>
           </Box>
           
@@ -456,9 +456,7 @@ const StartScreen = ({ onStartGame, defaultUrl }) => {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '1.5em', marginRight: '0.4em' }}>♠</span>
                   ゲームを開始する
-                  <span style={{ fontSize: '1.5em', marginLeft: '0.4em' }}>♥</span>
                 </Box>
               </Button>
             </Grid>
