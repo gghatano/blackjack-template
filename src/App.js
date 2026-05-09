@@ -28,13 +28,13 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div className="game-container" style={{ width: '100%', maxWidth: '100%' }}>
+      <div className="app-shell">
         {!gameStarted ? (
           <StartScreen onStartGame={handleStartGame} defaultUrl={dataUrl} />
         ) : (
-          <GameScreen 
-            teams={teams} 
-            dataUrl={dataUrl} 
+          <GameScreen
+            teams={teams}
+            dataUrl={dataUrl}
             wordData={wordData}
             setWordData={setWordData}
             targetScore={targetScore}
