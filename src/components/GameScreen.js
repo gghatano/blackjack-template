@@ -1,51 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  TextField, 
-  Paper, 
-  Grid,
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Chip
+  TextField,
+  Tooltip,
+  Typography,
+  useTheme,
 } from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import HistoryIcon from '@mui/icons-material/History';
+import UndoIcon from '@mui/icons-material/Undo';
+import EditIcon from '@mui/icons-material/Edit';
+import CasinoIcon from '@mui/icons-material/Casino';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import confetti from 'canvas-confetti';
+
 import { fetchSheetData } from '../utils/sheetUtils';
 import WordList from './WordList';
 import TeamPanel from './TeamPanel';
 
-const GameScreen = ({ 
-  teams, 
-  dataUrl, 
+const GameScreen = ({
+  teams,
+  dataUrl,
   wordData,
   setWordData,
   targetScore,
   setTargetScore,
-  onResetGame 
+  onResetGame,
 }) => {
+  const theme = useTheme();
+  const goldMain = theme.palette.casino.gold[600];
+  const feltDark = theme.palette.casino.felt[900];
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [gameHistory, setGameHistory] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
   const [usedWords, setUsedWords] = useState([]);
-  const [gameTeams, setGameTeams] = useState(teams.map(team => ({ ...team, isOut: false })));
+  const [gameTeams, setGameTeams] = useState(teams.map((t) => ({ ...t, isOut: false })));
   const [roundNumber, setRoundNumber] = useState(1);
+
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [floatingDelta, setFloatingDelta] = useState(null); // { teamIndex, value }
+
   const [gameWinner, setGameWinner] = useState(null);
   const [showWinnerDisplay, setShowWinnerDisplay] = useState(false);
-  const [inputDisabled, setInputDisabled] = useState(false);
-  const [activeTab, setActiveTab] = useState('words'); // モバイル用タブ切替
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showTargetEdit, setShowTargetEdit] = useState(false);
+  const [targetDraft, setTargetDraft] = useState(targetScore);
+  const [historyOpen, setHistoryOpen] = useState(true);
 
-  // スプレッドシートから列ヘッダーを取得する関数
+  const [inputDisabled, setInputDisabled] = useState(false);
   const [columnHeaders, setColumnHeaders] = useState({ column1: '', column2: '' });
-  
-  // データ読み込み
+
+  const lastSnapshotRef = useRef(null);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -61,483 +91,542 @@ const GameScreen = ({
         setLoading(false);
       }
     };
-
     loadData();
   }, [dataUrl, setWordData]);
 
-  // モバイル用タブ切替ハンドラ
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
+  const fireWinnerConfetti = () => {
+    const end = Date.now() + 1800;
+    const colors = ['#d4af37', '#ffffff', '#e2c25a', '#13593b'];
+    (function frame() {
+      confetti({ particleCount: 4, angle: 60, spread: 60, origin: { x: 0 }, colors });
+      confetti({ particleCount: 4, angle: 120, spread: 60, origin: { x: 1 }, colors });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    })();
   };
 
-  // 勝者判定関数
   const checkForWinner = (teams) => {
-    // 失格していないチーム数をカウント
-    const remainingTeams = teams.filter(team => !team.isOut);
-    
-    // 残り1チームの場合は勝者確定
-    if (remainingTeams.length === 1) {
-      return remainingTeams[0];
+    const remaining = teams.filter((t) => !t.isOut);
+    if (remaining.length === 1) return remaining[0];
+    if (remaining.length === 0) {
+      // 全員バスト時：直近で最も高いスコアを暫定勝者として返す（既存仕様にはなかったが救済）
+      return null;
     }
-    
     return null;
   };
 
-  // 次のチームへの移行関数
-  const moveToNextTeam = (teams) => {
-    console.log('Moving to next team');
-    
-    // 次のチームを決定
-    let nextTeamIndex = (currentTeamIndex + 1) % teams.length;
-    
-    // 失格チームはスキップ
-    while (teams[nextTeamIndex].isOut && teams.some(team => !team.isOut)) {
-      nextTeamIndex = (nextTeamIndex + 1) % teams.length;
-      if (nextTeamIndex === currentTeamIndex) break;
+  const moveToNextTeam = (teams, fromIndex) => {
+    let nextIndex = (fromIndex + 1) % teams.length;
+    while (teams[nextIndex].isOut && teams.some((t) => !t.isOut)) {
+      nextIndex = (nextIndex + 1) % teams.length;
+      if (nextIndex === fromIndex) break;
     }
-    
-    // ラウンド数の更新
-    if (nextTeamIndex === 0 || nextTeamIndex < currentTeamIndex) {
-      setRoundNumber(prevRound => prevRound + 1);
+    if (nextIndex === 0 || nextIndex < fromIndex) {
+      setRoundNumber((r) => r + 1);
     }
-    
-    console.log('Setting next team to:', nextTeamIndex);
-    setCurrentTeamIndex(nextTeamIndex);
-    
-    // 入力を再有効化
-    setTimeout(() => {
-      setInputDisabled(false);
-      console.log('Input enabled for next team');
-    }, 100);
+    setCurrentTeamIndex(nextIndex);
+    setTimeout(() => setInputDisabled(false), 80);
   };
 
-  // 単語選択ハンドラ
+  const snapshot = () => {
+    lastSnapshotRef.current = {
+      gameTeams,
+      usedWords,
+      currentTeamIndex,
+      roundNumber,
+      gameHistory,
+      gameWinner,
+      showWinnerDisplay,
+    };
+  };
+
+  const handleUndo = () => {
+    const snap = lastSnapshotRef.current;
+    if (!snap || inputDisabled || showScoreAnimation) return;
+    setGameTeams(snap.gameTeams);
+    setUsedWords(snap.usedWords);
+    setCurrentTeamIndex(snap.currentTeamIndex);
+    setRoundNumber(snap.roundNumber);
+    setGameHistory(snap.gameHistory);
+    setGameWinner(snap.gameWinner);
+    setShowWinnerDisplay(snap.showWinnerDisplay);
+    setSelectedWord(null);
+    lastSnapshotRef.current = null;
+  };
+
   const handleSelectWord = (word) => {
-    if (inputDisabled || showScoreAnimation) {
-      console.log('Cannot select word - input disabled or animation in progress');
-      return;
-    }
-    
+    if (inputDisabled || showScoreAnimation) return;
     if (!usedWords.includes(word.name)) {
       setSelectedWord(word);
-      
-      // アニメーション効果：選択時のフィードバック
-      const wordElement = document.getElementById(`word-${word.name}`);
-      if (wordElement) {
-        wordElement.classList.add('word-selected-animation');
-        setTimeout(() => {
-          wordElement.classList.remove('word-selected-animation');
-        }, 500);
-      }
     }
   };
 
-  // スキップハンドラ
   const handleSkip = () => {
-    if (inputDisabled || showScoreAnimation) {
-      console.log('Cannot skip - input disabled or animation in progress');
-      return;
-    }
-    
+    if (inputDisabled || showScoreAnimation) return;
     if (gameTeams[currentTeamIndex].isOut) return;
-    
-    // 入力無効化
+    snapshot();
     setInputDisabled(true);
-    console.log('Input disabled for skip operation');
-    
-    // 選択をクリア
     setSelectedWord(null);
-    
-    // スキップの履歴を追加（スキップはアニメーションなしなのですぐ追加）
-    setGameHistory(prevHistory => [
-      ...prevHistory,
+    setGameHistory((prev) => [
+      ...prev,
       {
         team: gameTeams[currentTeamIndex].name,
+        teamIndex: currentTeamIndex,
         word: 'スキップ',
         wordValue: 0,
         newScore: gameTeams[currentTeamIndex].score,
         isOut: false,
-        isSkip: true
-      }
+        isSkip: true,
+        round: roundNumber,
+      },
     ]);
-    
-    // 遅延してから次のチームへ
-    setTimeout(() => {
-      moveToNextTeam(gameTeams);
-    }, 500);
+    setTimeout(() => moveToNextTeam(gameTeams, currentTeamIndex), 350);
   };
 
-  // 単語選択確定ハンドラ
   const handleConfirmSelection = () => {
-    if (!selectedWord || inputDisabled || showScoreAnimation) {
-      console.log('Cannot confirm - no selection, input disabled, or animation in progress');
-      return;
-    }
-    
-    // 入力無効化
+    if (!selectedWord || inputDisabled || showScoreAnimation) return;
+    snapshot();
     setInputDisabled(true);
-    console.log('Input disabled for score calculation');
-    
-    // スコア計算
-    const currentTeam = gameTeams[currentTeamIndex];
+
+    const fromIndex = currentTeamIndex;
+    const currentTeam = gameTeams[fromIndex];
     const newScore = currentTeam.score + selectedWord.value;
     const isOut = newScore > targetScore;
-    
-    // チームスコア更新
+
     const updatedTeams = [...gameTeams];
-    updatedTeams[currentTeamIndex] = {
-      ...currentTeam, 
-      score: newScore,
-      isOut: isOut
-    };
+    updatedTeams[fromIndex] = { ...currentTeam, score: newScore, isOut };
     setGameTeams(updatedTeams);
-    
-    // 使用済み単語に追加
     setUsedWords([...usedWords, selectedWord.name]);
-    
-    // 履歴データを準備（アニメーション完了後に追加するため）
+
     const newHistoryRecord = {
       team: currentTeam.name,
+      teamIndex: fromIndex,
       word: selectedWord.name,
       wordValue: selectedWord.value,
       newScore,
       isOut,
-      round: roundNumber
+      round: roundNumber,
     };
-    
-    // 選択解除
+
     setSelectedWord(null);
-    
-    // アニメーション用のスコア設定
+    setFloatingDelta({ teamIndex: fromIndex, value: selectedWord.value });
+    setTimeout(() => setFloatingDelta(null), 1200);
+
     setAnimatedScore(currentTeam.score);
-    
-    // アニメーション開始
     setShowScoreAnimation(true);
-    
-    // スコアアニメーション
-    let animationStep = 0;
-    const animationSteps = 10;
-    const scoreDiff = newScore - currentTeam.score;
-    const stepSize = Math.max(1, Math.ceil(scoreDiff / animationSteps));
-    
-    const animationTimer = setInterval(() => {
-      setAnimatedScore(prev => {
-        const next = prev + stepSize;
-        return next >= newScore ? newScore : next;
-      });
-      
-      animationStep++;
-      if (animationStep >= animationSteps) {
-        clearInterval(animationTimer);
+
+    const startTs = performance.now();
+    const duration = 700;
+    const tick = (ts) => {
+      const elapsed = ts - startTs;
+      const t = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = Math.round(currentTeam.score + (newScore - currentTeam.score) * eased);
+      setAnimatedScore(v);
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
         finishAnimation();
       }
-    }, 50);
-    
-    // アニメーション完了後の処理
+    };
+    requestAnimationFrame(tick);
+
     const finishAnimation = () => {
-      // 失格エフェクト
       if (isOut) {
-        const teamPanel = document.getElementById(`team-panel-${currentTeamIndex}`);
-        if (teamPanel) {
-          teamPanel.classList.add('team-out-animation');
-          setTimeout(() => {
-            teamPanel.classList.remove('team-out-animation');
-          }, 600);
+        const el = document.getElementById(`team-panel-${fromIndex}`);
+        if (el) {
+          el.classList.add('team-out-animation');
+          setTimeout(() => el.classList.remove('team-out-animation'), 600);
         }
       }
-      
-      // アニメーション完了後に履歴に追加
-      setGameHistory(prevHistory => [...prevHistory, newHistoryRecord]);
-      
-      // 勝者判定
+      setGameHistory((prev) => [...prev, newHistoryRecord]);
+
       let winner = null;
-      if (isOut) {
+      if (isOut || updatedTeams.every((t) => t.isOut || usedWords.length + 1 >= wordData.length)) {
         winner = checkForWinner(updatedTeams);
-        if (winner) {
-          setGameWinner(winner);
-        }
+        if (winner) setGameWinner(winner);
       }
-      
-      // アニメーション完了後の遅延処理
+
       setTimeout(() => {
         setShowScoreAnimation(false);
-        
-        // 勝者がいる場合は表示
         if (winner) {
           setTimeout(() => {
             setShowWinnerDisplay(true);
             setInputDisabled(false);
-            console.log('Game over - winner displayed');
-          }, 500);
+            fireWinnerConfetti();
+          }, 400);
         } else {
-          // 勝者がいない場合は次のチームへ
-          setTimeout(() => {
-            moveToNextTeam(updatedTeams);
-          }, 300);
+          setTimeout(() => moveToNextTeam(updatedTeams, fromIndex), 200);
         }
-      }, 700);
+      }, 500);
     };
   };
 
-  // ターゲットスコア変更
-  const handleTargetScoreChange = (e) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value > 0) {
-      setTargetScore(value);
-    }
+  const handleTargetSave = () => {
+    const v = parseInt(targetDraft, 10);
+    if (!isNaN(v) && v > 0) setTargetScore(v);
+    setShowTargetEdit(false);
   };
 
   if (loading) {
-    return <Typography>データを読み込み中...</Typography>;
-  }
-
-  if (error) {
     return (
-      <Box>
-        <Typography color="error">{error}</Typography>
-        <Button onClick={onResetGame}>戻る</Button>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress sx={{ color: goldMain }} />
+          <Typography sx={{ color: 'rgba(255,255,255,0.85)' }}>データを読み込み中...</Typography>
+        </Stack>
       </Box>
     );
   }
 
-  // 履歴テーブルコンポーネント - 再利用のため分離
-  const HistoryTable = () => (
-    <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-      <Table size="small" className="history-table">
-        <TableHead>
-          <TableRow sx={{ bgcolor: 'background.lightPurple' }}>
-            <TableCell>チーム</TableCell>
-            <TableCell>選択した単語</TableCell>
-            <TableCell align="right">単語の値</TableCell>
-            <TableCell align="right">新しいスコア</TableCell>
-            <TableCell>結果</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {gameHistory.slice().reverse().map((record, index) => {
-            const isLatest = index === 0 && gameHistory.length > 0;
-            return (
-              <TableRow 
-                key={gameHistory.length - 1 - index}
-                sx={{
-                  backgroundColor: isLatest ? '#e3f2fd' : 'inherit',
-                  borderLeft: isLatest ? '4px solid #2196f3' : 'none',
-                  fontWeight: isLatest ? 'bold' : 'normal',
-                  '& .MuiTableCell-root': {
-                    fontWeight: isLatest ? 'bold' : 'normal'
-                  }
-                }}
-                className={isLatest ? 'latest-history-row' : ''}
-              >
-                <TableCell>{record.team}</TableCell>
-                <TableCell>
-                  {record.isSkip ? 
-                    <span style={{ color: '#ff9800', fontStyle: 'italic' }}>スキップ</span> : 
-                    record.word
-                  }
-                </TableCell>
-                <TableCell align="right">{record.wordValue}</TableCell>
-                <TableCell align="right">{record.newScore}</TableCell>
-                <TableCell align="right">{record.isOut ? 
-                  <span style={{ color: 'error.main', fontWeight: 'bold' }}>失格</span> : 
-                  <span style={{ color: 'success.main' }}>OK</span>
-                }</TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+  if (error) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Paper sx={{ p: 3, maxWidth: 480, mx: 'auto' }}>
+          <Typography color="error" gutterBottom>{error}</Typography>
+          <Button onClick={onResetGame} variant="contained" color="primary">トップに戻る</Button>
+        </Paper>
+      </Box>
+    );
+  }
+
+  const currentTeam = gameTeams[currentTeamIndex];
+  const currentTeamColor = theme.palette.teamColors[currentTeamIndex % theme.palette.teamColors.length];
+  const remainingCount = gameTeams.filter((t) => !t.isOut).length;
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%' }}>
-      <Button 
-        variant="outlined"
-        color="secondary" 
-        onClick={onResetGame}
-        sx={{ mb: 2, borderRadius: 2 }}
-        startIcon={<span>⬅️</span>}
-      >
-        トップに戻る
-      </Button>
-      
-      <div className="grid-container">
-        <div className="game-area">
-          {showWinnerDisplay ? (
-            <Paper elevation={4} sx={{ 
-              bgcolor: 'background.highlight', 
-              borderRadius: 3, 
-              border: '2px solid #ffc107', 
-              p: 3, 
-              textAlign: 'center',
-              boxShadow: '0 5px 20px rgba(255, 193, 7, 0.3)',
-              mb: 3,
-              animation: 'winnerDisplay 1s ease-in-out',
-            }}>
-              <Typography variant="h4" sx={{ color: 'warning.dark', fontWeight: 'bold', mb: 2 }}>
-                <span style={{ animation: 'trophy 1.5s infinite', display: 'inline-block' }}>🏆</span> 勝者 <span style={{ animation: 'trophy 1.5s infinite 0.5s', display: 'inline-block' }}>🏆</span>
+    <div className="game-shell">
+      <div className="game-main">
+        {/* ===== トップステータスバー ===== */}
+        <Paper
+          elevation={6}
+          sx={{
+            p: 2,
+            background: `linear-gradient(180deg, ${theme.palette.casino.felt[700]} 0%, ${feltDark} 100%)`,
+            border: `1px solid ${theme.palette.casino.gold[700]}`,
+            color: '#fff',
+            position: 'sticky',
+            top: 0,
+            zIndex: 5,
+          }}
+        >
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <CasinoIcon sx={{ color: goldMain }} />
+              <Typography variant="h6" sx={{ color: '#fff', fontWeight: 800 }}>
+                Word BlackJack
               </Typography>
-              <Typography variant="h5" sx={{ color: 'primary.dark', fontWeight: 'bold' }}>
-                {gameWinner?.name}
-              </Typography>
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Typography variant="body1" sx={{ mr: 2 }}>
-                  最終スコア: <strong>{gameWinner?.score}</strong>
+            </Stack>
+
+            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+              <Stack alignItems="center" spacing={0.25}>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1 }}>
+                  目標スコア
                 </Typography>
-                <Typography variant="body1">
-                  目標との差: <strong>{Math.abs(gameWinner?.score - targetScore)}</strong>
-                </Typography>
-              </Box>
-              <Button 
-                variant="contained" 
-                color="warning" 
-                onClick={onResetGame}
-                sx={{ mt: 3, minWidth: 200, py: 1 }}
-              >
-                ゲームを終了する
-              </Button>
-            </Paper>
-          ) : (
-            <Paper className="target-score" elevation={3} sx={{ bgcolor: 'background.lightGreen', borderRadius: 2, border: '1px solid #81c784' }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Typography variant="h5" component="span" sx={{ color: 'success.dark', fontWeight: 'bold' }}>
-                  目標スコア:
-                </Typography>
-                <TextField
-                  type="number"
-                  value={targetScore}
-                  onChange={handleTargetScoreChange}
-                  variant="outlined"
-                  size="small"
-                  sx={{ width: 150 }}
-                />
-              </Box>
-              
-              {/* ゲーム説明の追加 - スプレッドシートの列ヘッダーと基準点を使用 */}
-              <Box mt={2} p={2} bgcolor="rgba(255, 255, 255, 0.6)" borderRadius={2}>
-                <Typography variant="body2" sx={{ color: 'text.primary', lineHeight: 1.5 }}>
-                  <Box component="span" sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <span style={{ marginRight: '8px', fontSize: '1.1em', color: '#303f9f' }}>♠</span>
-                    <span>
-                      {/* 列ヘッダーと基準点をチェックして具体的な説明文を生成 */}
-                      {wordData && wordData.length > 0 ? (
-                        <>
-                          リストから<strong>{columnHeaders.column1}</strong>を選んで、
-                          その<strong>{columnHeaders.column2}</strong>を合計して、
-                          <strong>{targetScore.toLocaleString()}</strong>点にできるだけ近づけてください。
-                          <span style={{ color: '#d32f2f', marginLeft: '4px' }}>
-                            <strong>目標スコアを超えると失格</strong>になります！
-                          </span>
-                        </>
-                      ) : (
-                        <>リストから単語を選んで、{targetScore.toLocaleString()}点にできるだけ近づけてください。<span style={{ color: '#d32f2f' }}><strong>目標スコアを超えると失格</strong></span>になります！</>
-                      )}
-                    </span>
-                  </Box>
-                </Typography>
-              </Box>
-              
-              <Box mt={2} display="flex" alignItems="center" justifyContent="space-between">
-                <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Chip label={`ラウンド: ${roundNumber}`} color="primary" size="small" sx={{ fontWeight: 'bold' }} />
-                </Typography>
-                <Typography variant="body2">
-                  <span>ターン: <strong>{gameTeams[currentTeamIndex].name}</strong></span>
-                </Typography>
-              </Box>
-            </Paper>
-          )}
-          
-          <Grid container spacing={2}>
-            {gameTeams.map((team, index) => (
-              <Grid item 
-                xs={12} 
-                sm={gameTeams.length <= 2 ? 6 : 12} 
-                md={gameTeams.length <= 2 ? 6 : gameTeams.length === 3 ? 4 : 6} 
-                lg={gameTeams.length === 4 ? 3 : gameTeams.length === 3 ? 4 : 6}
-                key={index}
-              >
-                <TeamPanel
-                  id={`team-panel-${index}`}
-                  team={team}
-                  isActive={index === currentTeamIndex}
-                  targetScore={targetScore}
-                  selectedWord={index === currentTeamIndex ? selectedWord : null}
-                  onConfirm={index === currentTeamIndex ? handleConfirmSelection : null}
-                  showAnimation={showScoreAnimation && index === currentTeamIndex}
-                  animatedScore={animatedScore}
-                />
-              </Grid>
-            ))}
-          </Grid>
-          
-          {/* デスクトップ表示用ゲーム履歴（モバイルでは非表示） */}
-          <Box mt={4} className="desktop-only-history">
-            <Typography variant="h6" gutterBottom sx={{ color: 'info.dark', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-              <span style={{ marginRight: '8px' }}>📋</span> ゲーム履歴
-            </Typography>
-            <HistoryTable />
-          </Box>
-          
-          {/* モバイル向けタブ切り替え */}
-          <div className="mobile-tabs">
-            <div 
-              className={`mobile-tab ${activeTab === 'words' ? 'active' : ''}`}
-              onClick={() => handleTabChange('words')}
-            >
-              <span>📖 単語リスト</span>
-            </div>
-            <div 
-              className={`mobile-tab ${activeTab === 'history' ? 'active' : ''}`}
-              onClick={() => handleTabChange('history')}
-            >
-              <span>📋 ゲーム履歴</span>
-            </div>
-          </div>
-          
-          {/* モバイル用単語リスト（タブで表示・非表示切り替え） */}
-          <div className={`mobile-tab-content ${activeTab !== 'words' ? 'hidden' : ''}`}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" sx={{ color: 'warning.dark', fontWeight: 'bold', mb: 1 }}>
-                単語を選んでください
-              </Typography>
-              <WordList 
-                words={wordData} 
-                usedWords={usedWords}
-                selectedWord={selectedWord}
-                onSelectWord={handleSelectWord}
-                onSkip={handleSkip}
-                disabled={inputDisabled || showScoreAnimation || showWinnerDisplay}
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <Typography
+                    variant="h5"
+                    className="tnum"
+                    sx={{ color: goldMain, fontWeight: 800, lineHeight: 1.1 }}
+                  >
+                    {targetScore.toLocaleString()}
+                  </Typography>
+                  <Tooltip title="目標スコアを変更">
+                    <IconButton
+                      size="small"
+                      onClick={() => { setTargetDraft(targetScore); setShowTargetEdit(true); }}
+                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    >
+                      <EditIcon fontSize="inherit" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Stack>
+
+              <Chip
+                label={`Round ${roundNumber}`}
+                size="small"
+                sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(212,175,55,0.4)' }}
               />
+              <Chip
+                label={`残り ${remainingCount} チーム`}
+                size="small"
+                sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' }}
+              />
+            </Stack>
+
+            <Stack direction="row" spacing={1}>
+              <Tooltip title={lastSnapshotRef.current ? '直前の手を取り消す' : '取り消せる手はありません'}>
+                <span>
+                  <IconButton
+                    onClick={handleUndo}
+                    disabled={!lastSnapshotRef.current || inputDisabled || showScoreAnimation}
+                    sx={{ color: '#fff' }}
+                  >
+                    <UndoIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Button
+                variant="outlined"
+                color="inherit"
+                onClick={() => setShowResetConfirm(true)}
+                startIcon={<ArrowBackIosNewIcon />}
+                sx={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff' }}
+              >
+                トップ
+              </Button>
+            </Stack>
+          </Stack>
+
+          {/* 現在のターン大バナー */}
+          {!showWinnerDisplay && currentTeam && (
+            <Box
+              className="turn-banner"
+              key={`turn-${currentTeamIndex}-${roundNumber}`}
+              sx={{
+                mt: 1.5,
+                p: 2,
+                borderRadius: 2,
+                background: `linear-gradient(90deg, ${currentTeamColor} 0%, ${currentTeamColor}cc 60%, ${currentTeamColor}55 100%)`,
+                border: `2px solid ${currentTeamColor}`,
+                boxShadow: `0 0 0 2px rgba(255,255,255,0.08) inset, 0 6px 18px ${currentTeamColor}66`,
+              }}
+            >
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: '50%',
+                    bgcolor: '#fff',
+                    boxShadow: `0 0 12px #fff, 0 0 4px ${currentTeamColor}`,
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#fff',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.18em',
+                    fontWeight: 800,
+                    opacity: 0.9,
+                  }}
+                >
+                  Your turn ▶
+                </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    color: '#fff',
+                    fontWeight: 900,
+                    textShadow: '0 2px 0 rgba(0,0,0,0.45)',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {currentTeam.name}
+                </Typography>
+              </Stack>
             </Box>
-          </div>
-          
-          {/* モバイル用ゲーム履歴（タブで表示・非表示切り替え） */}
-          <div className={`mobile-tab-content ${activeTab !== 'history' ? 'hidden' : ''}`}>
-            <Typography variant="subtitle1" sx={{ color: 'info.dark', fontWeight: 'bold', mb: 1 }}>
-              ゲーム履歴
+          )}
+        </Paper>
+
+        {/* ===== 勝者表示 ===== */}
+        {showWinnerDisplay && (
+          <Paper
+            className="winner-pop"
+            elevation={8}
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              background: `linear-gradient(180deg, ${theme.palette.casino.gold[400]} 0%, ${theme.palette.casino.gold[700]} 100%)`,
+              border: `3px solid ${theme.palette.casino.gold[800]}`,
+              color: feltDark,
+            }}
+          >
+            <EmojiEventsIcon className="trophy-anim" sx={{ fontSize: 80, color: feltDark, mb: 1 }} />
+            <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
+              WINNER
             </Typography>
-            <HistoryTable />
-          </div>
-        </div>
-        
-        {/* デスクトップ表示用：右サイドの単語リスト */}
-        <div className="word-list-area">
-          <Typography variant="h6" gutterBottom sx={{ color: 'warning.dark', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-            <span style={{ marginRight: '8px' }}>📖</span> 単語リスト
-          </Typography>
-          <WordList 
-            words={wordData} 
-            usedWords={usedWords}
-            selectedWord={selectedWord}
-            onSelectWord={handleSelectWord}
-            onSkip={handleSkip}
-            disabled={inputDisabled || showScoreAnimation || showWinnerDisplay}
-          />
-        </div>
+            <Typography variant="h4" sx={{ fontWeight: 800, mb: 2 }}>
+              {gameWinner?.name}
+            </Typography>
+            <Stack direction="row" spacing={3} justifyContent="center" sx={{ mb: 3 }}>
+              <Stack alignItems="center">
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>最終スコア</Typography>
+                <Typography variant="h5" className="tnum" sx={{ fontWeight: 800 }}>
+                  {gameWinner?.score?.toLocaleString()}
+                </Typography>
+              </Stack>
+              <Stack alignItems="center">
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>目標との差</Typography>
+                <Typography variant="h5" className="tnum" sx={{ fontWeight: 800 }}>
+                  {Math.abs((gameWinner?.score ?? 0) - targetScore).toLocaleString()}
+                </Typography>
+              </Stack>
+            </Stack>
+            <Button onClick={onResetGame} variant="contained" color="secondary" size="large">
+              もう一回あそぶ
+            </Button>
+          </Paper>
+        )}
+
+        {/* ===== チームパネル ===== */}
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: gameTeams.length === 1 ? '1fr' : 'repeat(2, 1fr)',
+              md: `repeat(${Math.min(gameTeams.length, 4)}, 1fr)`,
+            },
+          }}
+        >
+          {gameTeams.map((team, index) => (
+            <TeamPanel
+              key={index}
+              id={`team-panel-${index}`}
+              team={team}
+              teamColor={theme.palette.teamColors[index % theme.palette.teamColors.length]}
+              isActive={index === currentTeamIndex && !showWinnerDisplay}
+              targetScore={targetScore}
+              selectedWord={index === currentTeamIndex ? selectedWord : null}
+              onConfirm={index === currentTeamIndex ? handleConfirmSelection : null}
+              showAnimation={showScoreAnimation && index === currentTeamIndex}
+              animatedScore={animatedScore}
+              floatingDelta={floatingDelta && floatingDelta.teamIndex === index ? floatingDelta.value : null}
+              disabled={inputDisabled || showScoreAnimation || showWinnerDisplay}
+            />
+          ))}
+        </Box>
+
+        {/* ===== 履歴 ===== */}
+        <Paper sx={{ p: 2, bgcolor: 'rgba(255,248,230,0.96)' }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <HistoryIcon sx={{ color: 'secondary.main' }} />
+              <Typography variant="h6" sx={{ color: 'secondary.dark' }}>
+                履歴
+              </Typography>
+              <Chip label={`${gameHistory.length} 手`} size="small" />
+            </Stack>
+            <IconButton onClick={() => setHistoryOpen((v) => !v)}>
+              {historyOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+          </Stack>
+          <Collapse in={historyOpen} timeout="auto">
+            {gameHistory.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
+                まだ手が打たれていません
+              </Typography>
+            ) : (
+              <TableContainer sx={{ mt: 1, maxHeight: 320 }}>
+                <Table size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>R</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>チーム</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{columnHeaders.column1 || '単語'}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700 }}>{columnHeaders.column2 || '値'}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700 }}>累計</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>結果</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {gameHistory.slice().reverse().map((record, idx) => {
+                      const isLatest = idx === 0;
+                      const tc = theme.palette.teamColors[(record.teamIndex ?? 0) % theme.palette.teamColors.length];
+                      return (
+                        <TableRow
+                          key={gameHistory.length - 1 - idx}
+                          className={isLatest ? 'latest-history-row' : ''}
+                          sx={{ '& td': { fontWeight: isLatest ? 700 : 400 } }}
+                        >
+                          <TableCell>{record.round}</TableCell>
+                          <TableCell>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: tc }} />
+                              {record.team}
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            {record.isSkip ? (
+                              <Typography component="span" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                                スキップ
+                              </Typography>
+                            ) : (
+                              record.word
+                            )}
+                          </TableCell>
+                          <TableCell align="right" className="tnum">
+                            {record.isSkip ? '—' : `+${record.wordValue.toLocaleString()}`}
+                          </TableCell>
+                          <TableCell align="right" className="tnum">{record.newScore.toLocaleString()}</TableCell>
+                          <TableCell align="center">
+                            {record.isOut ? (
+                              <Chip label="BUST" size="small" color="error" sx={{ fontWeight: 800 }} />
+                            ) : record.isSkip ? (
+                              <Chip label="SKIP" size="small" variant="outlined" />
+                            ) : (
+                              <Chip label="OK" size="small" color="success" variant="outlined" />
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Collapse>
+        </Paper>
       </div>
-    </Box>
+
+      {/* ===== サイドカラム: 単語リスト ===== */}
+      <aside className="game-side">
+        <WordList
+          words={wordData}
+          usedWords={usedWords}
+          selectedWord={selectedWord}
+          onSelectWord={handleSelectWord}
+          onSkip={handleSkip}
+          disabled={inputDisabled || showScoreAnimation || showWinnerDisplay}
+          column1Label={columnHeaders.column1 || '単語'}
+        />
+      </aside>
+
+      {/* ===== モーダル: トップに戻る確認 ===== */}
+      <Dialog open={showResetConfirm} onClose={() => setShowResetConfirm(false)}>
+        <DialogTitle>ゲームを終了しますか？</DialogTitle>
+        <DialogContent>
+          <Typography>進行中のゲームの状態は失われます。</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowResetConfirm(false)}>キャンセル</Button>
+          <Button onClick={onResetGame} variant="contained" color="error">トップに戻る</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ===== モーダル: 目標スコア変更 ===== */}
+      <Dialog open={showTargetEdit} onClose={() => setShowTargetEdit(false)}>
+        <DialogTitle>目標スコアを変更</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            type="number"
+            fullWidth
+            value={targetDraft}
+            onChange={(e) => setTargetDraft(e.target.value)}
+            sx={{ mt: 1 }}
+            InputProps={{ inputProps: { min: 1 } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowTargetEdit(false)}>キャンセル</Button>
+          <Button onClick={handleTargetSave} variant="contained" color="primary">変更する</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };
 

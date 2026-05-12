@@ -1,288 +1,152 @@
-/* アニメーション効果 */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-@keyframes winnerDisplay {
-  0% { transform: scale(0.9); opacity: 0; }
-  40% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes trophy {
-  0% { transform: translateY(0) rotate(0); }
-  25% { transform: translateY(-10px) rotate(-5deg); }
-  50% { transform: translateY(0) rotate(0); }
-  75% { transform: translateY(-5px) rotate(5deg); }
-  100% { transform: translateY(0) rotate(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes newHistoryHighlight {
-  0% { background-color: #ffeb3b; transform: translateX(-5px); }
-  50% { background-color: #e3f2fd; transform: translateX(0); }
-  100% { background-color: #e3f2fd; transform: translateX(0); }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-@keyframes scorePulse {
-  0% { color: #2196f3; transform: scale(1); }
-  50% { color: #4caf50; transform: scale(1.2); }
-  100% { color: #2196f3; transform: scale(1); }
-}
-
-.word-selected-animation {
-  animation: pulse 0.3s ease-in-out;
-}
-
-.team-out-animation {
-  animation: shake 0.5s ease-in-out;
-}
-
-.score-change-animation {
-  animation: scorePulse 0.5s ease-in-out;
-}
-
-.latest-history-row {
-  animation: newHistoryHighlight 1s ease-in-out;
-}
-
-/* レスポンシブ表示用のクラス */
-.desktop-only {
-  display: inline;
-}
-
-.mobile-only {
-  display: none;
-}
-
-/* モバイル向けタブ切替レイアウト */
-.mobile-tabs {
-  display: none;
-}
-
-.mobile-tab-content {
-  display: none;
-}
-
-/* デスクトップ表示用履歴テーブル */
-.desktop-only-history {
-  display: block;
-}
-
+/* ===== グローバル ===== */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4ecfb 100%);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'JetBrains Mono', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.game-container {
+/* タブラー数字（スコア用） */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* ===== アニメーション ===== */
+@keyframes scorePulse {
+  0%   { transform: scale(1);   text-shadow: 0 0 0 rgba(212,175,55,0); }
+  50%  { transform: scale(1.18); text-shadow: 0 0 14px rgba(212,175,55,0.7); }
+  100% { transform: scale(1);   text-shadow: 0 0 0 rgba(212,175,55,0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-7px); }
+  20%, 40%, 60%, 80% { transform: translateX(7px); }
+}
+
+@keyframes bustStamp {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(2.5) rotate(-25deg); }
+  40%  { opacity: 1; transform: translate(-50%, -50%) scale(0.95) rotate(-10deg); }
+  60%  { transform: translate(-50%, -50%) scale(1.05) rotate(-12deg); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-12deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes turnGlow {
+  0%   { box-shadow: 0 0 0 rgba(212,175,55,0.0), 0 8px 22px rgba(0,0,0,0.35); }
+  50%  { box-shadow: 0 0 24px rgba(212,175,55,0.55), 0 8px 22px rgba(0,0,0,0.35); }
+  100% { box-shadow: 0 0 0 rgba(212,175,55,0.0), 0 8px 22px rgba(0,0,0,0.35); }
+}
+
+@keyframes turnBannerSlide {
+  0%   { opacity: 0; transform: translateY(-6px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes newRowFlash {
+  0%   { background-color: rgba(212,175,55,0.45); }
+  100% { background-color: transparent; }
+}
+
+@keyframes winnerPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes trophy {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-8px) rotate(-6deg); }
+  75% { transform: translateY(-4px) rotate(6deg); }
+}
+
+/* 適用クラス */
+.score-change-animation { animation: scorePulse 0.55s ease-in-out; display: inline-block; }
+.team-out-animation     { animation: shake 0.55s ease-in-out; }
+.latest-history-row     { animation: newRowFlash 1.2s ease-out; }
+.turn-glow              { animation: turnGlow 2.4s ease-in-out infinite; }
+.turn-banner            { animation: turnBannerSlide 0.4s ease-out both; }
+.winner-pop             { animation: winnerPop 0.6s cubic-bezier(.18,.89,.32,1.28) both; }
+.trophy-anim            { animation: trophy 1.6s ease-in-out infinite; display: inline-block; }
+.bust-stamp             { animation: bustStamp 0.55s cubic-bezier(.2,1.2,.4,1) both; }
+
+/* ===== レイアウト ===== */
+.app-shell {
   width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 20px;
+  min-height: 100vh;
   box-sizing: border-box;
 }
 
-.grid-container {
+/* StartScreen 用ゆったり余白 */
+.start-shell {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  box-sizing: border-box;
+}
+
+/* GameScreen 用 3カラムレイアウト（デスクトップ） */
+.game-shell {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+  min-height: 100vh;
+}
+
+.game-main {
   display: flex;
-  height: calc(100vh - 40px);
-  width: 100%;
-  max-width: 100%;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 }
 
-@media (max-width: 768px) {
-  .desktop-only {
-    display: none;
+.game-side {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* レスポンシブ */
+@media (max-width: 960px) {
+  .game-shell {
+    grid-template-columns: 1fr;
   }
-  
-  .mobile-only {
-    display: inline;
-  }
-  
-  .grid-container {
-    flex-direction: column;
+  .game-side {
+    position: static;
     height: auto;
   }
-  
-  .game-area {
-    flex: none;
-    border-right: none;
-    padding-bottom: 10px;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-  }
-  
-  .word-list-area {
-    display: none;
-  }
-  
-  /* デスクトップ用履歴をモバイルでは非表示 */
-  .desktop-only-history {
-    display: none;
-  }
-  
-  /* タブレイアウト */
-  .mobile-tabs {
-    display: flex;
-    width: 100%;
-    border-bottom: 1px solid #ddd;
-    margin: 10px 0;
-    position: sticky;
-    top: 0;
-    background-color: #f5f7fa;
-    z-index: 100;
-    padding: 5px 0;
-  }
-  
-  .mobile-tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
-  }
-  
-  .mobile-tab.active {
-    border-bottom: 3px solid #2196f3;
-    color: #2196f3;
-  }
-  
-  .mobile-tab-content {
-    display: block;
-    height: auto;
-    max-height: 50vh; /* 画面の高さの50%までスクロール可能 */
-    overflow-y: auto;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-  }
-  
-  .mobile-tab-content.hidden {
-    display: none;
-  }
 }
 
-.game-area {
-  flex: 8;
-  padding: 10px;
-  border-right: 1px solid #ccc;
+/* ===== 共通ユーティリティ ===== */
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.6), transparent);
+  margin: 8px 0;
 }
 
-.word-list-area {
-  flex: 2;
-  padding: 10px;
-  overflow-y: auto;
-  max-height: 100%;
-}
-
-.word-item {
-  margin: 5px 0;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.word-item:hover {
-  background-color: #fff3e0;
-  transform: translateX(5px);
-  transition: all 0.2s ease;
-}
-
-.word-item.selected {
-  background-color: #e3f2fd;
-  border-left: 4px solid #2196f3;
-}
-
-.word-item.disabled {
-  color: #666;
-  background-color: #f8f8f8;
-  cursor: not-allowed;
-  border-left: 3px solid #ccc;
-}
-
-.word-item.disabled .word-score {
-  background-color: #e0e0e0;
-  color: #666;
-  font-weight: bold;
-}
-
-.team-panel {
-  margin-bottom: 15px;
-  padding: 10px;
-  border: 1px solid #ddd;
+/* スクロールバーをカジノ調に */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.06); border-radius: 8px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d4af37, #a3791a);
   border-radius: 8px;
-  transition: all 0.3s ease;
 }
-
-.team-panel.active {
-  border-color: #2196f3;
-  box-shadow: 0 0 15px rgba(33, 150, 243, 0.3);
-}
-
-.team-panel.lost {
-  background-color: #f0f0f0;
-  opacity: 0.7;
-}
-
-.target-score {
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  padding: 15px;
-  border: 1px solid #4caf50;
-  border-radius: 8px;
-  background-color: #e8f5e9;
-  box-shadow: 0 2px 10px rgba(76, 175, 80, 0.15);
-}
-
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.history-table th, .history-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.history-table th {
-  background-color: #f3e5f5;
-  color: #6a1b9a;
-  font-weight: bold;
-}
-
-.history-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #eed27a, #c89a2a);
 }
